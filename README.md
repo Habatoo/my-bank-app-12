@@ -3,17 +3,19 @@
 ![Java](https://img.shields.io/badge/Java-17-informational?logo=java)
 ![Postgres](https://img.shields.io/badge/PostgreSQL-17-informational?logo=postgresql)
 ![Docker](https://img.shields.io/badge/Docker-compose-blue?logo=docker)
+![Kafka](https://img.shields.io/badge/Kafka-blue?logo=kafka)
 
 ## О проекте
-my-bank-app-10 — это современное банковское приложение, 
+my-bank-app-11 — это современное банковское приложение, 
 построенное на микросервисной архитектуре с использованием реактивного стека (Spring WebFlux). 
 Система обеспечивает полный цикл управления личными финансами в безопасной среде.
+Обмен сообщениями осуществляется через Kafka.
 
 ## Основные возможности:
 * Управление аккаунтом: Редактирование персональных данных (ФИО, дата рождения) с валидацией возраста (18+).
 * Операции с наличностью (Cash): Виртуальное внесение и снятие средств с проверкой баланса.
 * Денежные переводы (Transfer): Переводы между счетами пользователей внутри системы.
-* Уведомления: Логирование и оповещение о каждой успешной транзакции.
+* Уведомления: Логирование и оповещение о каждой успешной транзакции через Kafka.
 * Security: Полная защита API с помощью Keycloak (OAuth 2.0 / OpenID Connect).
 
 ## Архитектура и структура проекта
@@ -68,14 +70,15 @@ my-bank-app/
 - **Database**: PostgreSQL (отдельные БД для каждого сервиса), Liquibase.
 - **Infrastructure**: Kubernetes, Helm, Docker.
 - **Security**: Keycloak (RBAC, OAuth2).
+- **Notification**: Kafka.
 - **Testing**: JUnit 5, StepVerifier (для реактивных потоков), Testcontainers.
 
 ## Быстрый старт
 Быстрый старт
 1. Подготовка окружения
 ```bash
-   git clone -b feature/module_two_sprint_eight_branch https://github.com/Habatoo/my-bank-app-10.git
-   cd my-bank-app-10
+   git clone -b feature/module_two_sprint_eight_branch https://github.com/Habatoo/my-bank-app-11.git
+   cd my-bank-app-11
 ```
 
 2. Автоматический деплой (Win)
@@ -133,9 +136,9 @@ helm test bank-dev -n dev --logs
 <br>
 💸 Модуль Cash — Логика ввода/вывода средств. [Документация модуля cash](./cash/README.md)
 <br>
-🔄 Модуль Transfer — Проведение транзакций между счетами. [Документация модуля front-ui](./front-ui/README.md)
+🔄 Модуль Transfer — Проведение транзакций между счетами. [Документация модуля transfer](./transfer/README.md)
 <br>
-🔔 Модуль Notifications — Система оповещений. [Документация модуля transfer](./transfer/README.md)
+🔔 Модуль Notifications — Система оповещений. [Документация модуля notification](./notification/README.md)
 <br>
 🌐 Модуль Gateway — Единая точка входа и безопасность. [Документация модуля gateway](./gateway/README.md)
 <br>
