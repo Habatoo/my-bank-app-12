@@ -1,12 +1,11 @@
 package io.github.habatoo.controllers;
 
-import io.github.habatoo.GatewayApplication;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -15,26 +14,15 @@ import org.springframework.security.oauth2.client.registration.ReactiveClientReg
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 /**
  * Интеграционные тесты для контроллера FallbackController.
  */
-@SpringBootTest(
-        classes = GatewayApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {
-                "spring.main.allow-bean-definition-overriding=true",
-                "spring.liquibase.enabled=false",
-                "spring.security.oauth2.client.registration.keycloak.enabled=false",
-                "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration,org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration,org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration"
-        }
-)
+@WebFluxTest(controllers = FallbackController.class)
+@Import(FallbackControllerIntegrationTest.TestSecurityConfig.class)
 @ActiveProfiles("test")
-@AutoConfigureWebTestClient
-@ContextConfiguration(classes = FallbackControllerIntegrationTest.TestSecurityConfig.class)
 class FallbackControllerIntegrationTest {
 
     @MockitoBean
@@ -97,7 +85,7 @@ class FallbackControllerIntegrationTest {
      *
      * @Primary гарантирует переопределение любой другой Security-конфигурации.
      */
-    @Configuration
+    @TestConfiguration
     static class TestSecurityConfig {
 
         @Bean

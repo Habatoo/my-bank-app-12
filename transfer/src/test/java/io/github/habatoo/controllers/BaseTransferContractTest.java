@@ -2,6 +2,7 @@ package io.github.habatoo.controllers;
 
 import io.github.habatoo.TransferApplication;
 import io.github.habatoo.configurations.TestSecurityConfiguration;
+import io.github.habatoo.dto.NotificationEvent;
 import io.github.habatoo.dto.OperationResultDto;
 import io.github.habatoo.dto.TransferDto;
 import io.github.habatoo.dto.enums.Currency;
@@ -32,6 +33,7 @@ import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
+import reactor.kafka.sender.KafkaSender;
 
 import java.math.BigDecimal;
 
@@ -50,6 +52,8 @@ import static org.mockito.Mockito.when;
                 "spring.main.allow-bean-definition-overriding=true",
                 "spring.liquibase.enabled=false",
                 "spring.security.enabled=false",
+                "spring.kafka.admin.auto-create=false",
+                "spring.kafka.bootstrap-servers=kafka:9092",
                 "spring.security.oauth2.client.registration.keycloak.enabled=false",
                 "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration,org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration"
         }
@@ -81,6 +85,9 @@ public abstract class BaseTransferContractTest {
 
     @MockitoBean
     private ReactiveClientRegistrationRepository reactiveClientRegistrationRepository;
+
+    @MockitoBean
+    private KafkaSender<String, NotificationEvent> kafkaSender;
 
     @MockitoBean
     private ReactiveOAuth2AuthorizedClientService reactiveOAuth2AuthorizedClientService;

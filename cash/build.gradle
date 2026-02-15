@@ -63,6 +63,7 @@ dependencies {
     testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
     contractTestImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
     testImplementation 'io.rest-assured:spring-web-test-client'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
 
     cashIntegrationTestImplementation 'org.springframework.boot:spring-boot-starter-test'
     cashIntegrationTestImplementation 'io.projectreactor:reactor-test'

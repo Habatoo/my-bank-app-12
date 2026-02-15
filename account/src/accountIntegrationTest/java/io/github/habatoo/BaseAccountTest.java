@@ -8,7 +8,10 @@ import io.github.habatoo.models.Account;
 import io.github.habatoo.models.User;
 import io.github.habatoo.repositories.AccountRepository;
 import io.github.habatoo.repositories.UserRepository;
-import io.github.habatoo.services.*;
+import io.github.habatoo.services.AccountService;
+import io.github.habatoo.services.OutboxClientService;
+import io.github.habatoo.services.OutboxService;
+import io.github.habatoo.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration;
@@ -41,7 +44,9 @@ import java.util.UUID;
         properties = {
                 "spring.cloud.compatibility-verifier.enabled=false",
                 "spring.main.allow-bean-definition-overriding=true",
-                "spring.liquibase.enabled=false"
+                "spring.liquibase.enabled=false",
+                "spring.kafka.admin.auto-create=false",
+                "spring.kafka.bootstrap-servers=kafka:9092"
         }
 )
 @EnableAutoConfiguration(exclude = {
@@ -72,9 +77,6 @@ public abstract class BaseAccountTest extends BaseTest {
 
     @MockitoBean
     protected OutboxClientService outboxClientService;
-
-    @MockitoBean
-    protected NotificationClientService notificationClientService;
 
     @MockitoBean
     protected ReactiveClientRegistrationRepository reactiveClientRegistrationRepository;

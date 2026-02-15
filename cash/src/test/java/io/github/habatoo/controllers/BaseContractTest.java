@@ -3,12 +3,12 @@ package io.github.habatoo.controllers;
 import io.github.habatoo.CashApplication;
 import io.github.habatoo.configurations.TestSecurityConfiguration;
 import io.github.habatoo.dto.CashDto;
+import io.github.habatoo.dto.NotificationEvent;
 import io.github.habatoo.dto.OperationResultDto;
 import io.github.habatoo.dto.enums.Currency;
 import io.github.habatoo.dto.enums.OperationType;
 import io.github.habatoo.repositories.OperationsRepository;
 import io.github.habatoo.services.CashService;
-import io.github.habatoo.services.NotificationClientService;
 import io.github.habatoo.services.OutboxClientService;
 import io.restassured.module.webtestclient.RestAssuredWebTestClient;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +35,7 @@ import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
+import reactor.kafka.sender.KafkaSender;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -54,6 +55,8 @@ import static org.mockito.Mockito.when;
                 "spring.main.allow-bean-definition-overriding=true",
                 "spring.liquibase.enabled=false",
                 "spring.security.enabled=false",
+                "spring.kafka.admin.auto-create=false",
+                "spring.kafka.bootstrap-servers=kafka:9092",
                 "spring.security.oauth2.client.registration.keycloak.enabled=false",
                 "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration,org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration"
         }
@@ -93,7 +96,7 @@ public abstract class BaseContractTest {
     private OutboxClientService outboxClientService;
 
     @MockitoBean
-    private NotificationClientService notificationClientService;
+    private KafkaSender<String, NotificationEvent> kafkaSender;
 
     @Autowired
     protected ApplicationContext context;
@@ -180,6 +183,5 @@ public abstract class BaseContractTest {
 
         when(operationsRepository.save(any())).thenAnswer(i -> Mono.just(i.getArgument(0)));
         when(outboxClientService.saveEvent(any())).thenReturn(Mono.empty());
-        when(notificationClientService.sendScheduled(any())).thenReturn(Mono.empty());
     }
 }

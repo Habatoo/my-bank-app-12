@@ -4,13 +4,6 @@ server:
 spring:
   main:
     allow-bean-definition-overriding: true
-  cloud:
-    compatibility-verifier: false
-
-    config:
-      enabled: false
-  liquibase:
-    enabled: false
 
   security:
     oauth2:
