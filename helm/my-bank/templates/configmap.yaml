@@ -14,3 +14,6 @@ data:
 
   NOTIFICATION_URL: "http://notification/notification"
   GATEWAY_HOST: "http://gateway:8080"
+
+  KAFKA_RESILIENCE_TOPIC: "system-alerts"
+  LOAD_LIMIT: "100"

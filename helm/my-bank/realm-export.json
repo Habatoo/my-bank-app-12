@@ -19,8 +19,7 @@
       { "name": "ADMIN", "description": "Администратор" },
       { "name": "ACCOUNT_ACCESS", "description": "Доступ к сервису аккаунтов" },
       { "name": "CASH_ACCESS", "description": "Доступ к сервису наличных" },
-      { "name": "TRANSFER_ACCESS", "description": "Доступ к сервису переводов" },
-      { "name": "NOTIFICATION_ACCESS", "description": "Доступ к сервису уведомлений" }
+      { "name": "TRANSFER_ACCESS", "description": "Доступ к сервису переводов" }
     ]
   },
   "clients": [
@@ -119,9 +118,8 @@
   ],
   "scopeMappings": [
     { "client": "front-ui", "roles": ["ACCOUNT_ACCESS", "CASH_ACCESS", "TRANSFER_ACCESS"] },
-    { "client": "account", "roles": ["NOTIFICATION_ACCESS"] },
-    { "client": "cash", "roles": ["ACCOUNT_ACCESS", "NOTIFICATION_ACCESS"] },
-    { "client": "transfer", "roles": ["ACCOUNT_ACCESS", "NOTIFICATION_ACCESS"] }
+    { "client": "cash", "roles": ["ACCOUNT_ACCESS"] },
+    { "client": "transfer", "roles": ["ACCOUNT_ACCESS"] }
   ],
   "users": [
     {
@@ -144,7 +142,7 @@
       "username": "service-account-account",
       "enabled": true,
       "serviceAccountClientId": "account",
-      "realmRoles": ["NOTIFICATION_ACCESS"],
+      "realmRoles": [],
       "clientRoles": {
         "realm-management": ["manage-users", "query-users", "view-users"]
       }
@@ -153,13 +151,13 @@
       "username": "service-account-cash",
       "enabled": true,
       "serviceAccountClientId": "cash",
-      "realmRoles": ["ACCOUNT_ACCESS", "NOTIFICATION_ACCESS"]
+      "realmRoles": ["ACCOUNT_ACCESS"]
     },
     {
       "username": "service-account-transfer",
       "enabled": true,
       "serviceAccountClientId": "transfer",
-      "realmRoles": ["ACCOUNT_ACCESS", "NOTIFICATION_ACCESS"]
+      "realmRoles": ["ACCOUNT_ACCESS"]
     }
   ],
   "requiredActions": [
