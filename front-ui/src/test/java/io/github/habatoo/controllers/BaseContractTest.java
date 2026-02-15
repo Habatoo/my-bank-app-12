@@ -5,6 +5,7 @@ import io.github.habatoo.configurations.TestSecurityConfiguration;
 import io.github.habatoo.dto.CashDto;
 import io.github.habatoo.dto.NotificationEvent;
 import io.github.habatoo.dto.TransferDto;
+import io.github.habatoo.repositories.OutboxRepository;
 import io.github.habatoo.services.CashFrontService;
 import io.github.habatoo.services.FrontService;
 import io.github.habatoo.services.TransferFrontService;
@@ -76,6 +77,9 @@ public abstract class BaseContractTest {
 
     @MockitoBean
     protected FrontService frontService;
+
+    @MockitoBean
+    protected OutboxRepository outboxRepository;
 
     @MockitoBean
     protected CashFrontService cashFrontService;

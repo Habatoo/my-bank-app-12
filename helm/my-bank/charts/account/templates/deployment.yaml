@@ -25,6 +25,10 @@ spec:
             - secretRef:
                 name: my-bank-common-secrets
           env:
+            - name: CHASSIS_OUTBOX_ENABLED
+              value: "true"
+            - name: CHASSIS_KAFKA_ENABLED
+              value: "true"
             - name: SPRING_KAFKA_CONSUMER_GROUP_ID
               value: "account-group"
             - name: DB_PASSWORD

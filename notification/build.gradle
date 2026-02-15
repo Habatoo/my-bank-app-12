@@ -47,22 +47,17 @@ configurations {
 dependencies {
     api project(':microservice-chassis')
 
-    api 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    api 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
-    testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     testImplementation 'io.rest-assured:spring-web-test-client'
 
     notificationIntegrationTestImplementation 'org.springframework.boot:spring-boot-starter-test'
     notificationIntegrationTestImplementation 'io.projectreactor:reactor-test'
-    notificationIntegrationTestImplementation 'org.springframework.security:spring-security-test'
 
     notificationIntegrationTestImplementation 'org.testcontainers:postgresql'
     notificationIntegrationTestImplementation 'org.testcontainers:r2dbc'

@@ -16,4 +16,10 @@ data:
   GATEWAY_HOST: "http://gateway:8080"
 
   KAFKA_RESILIENCE_TOPIC: "system-alerts"
+  KAFKA_PARTITIONS: "3"
+  KAFKA_REPLICAS: "1"
+
+  CHASSIS_OUTBOX_ENABLED: "true"
+  CHASSIS_KAFKA_ENABLED: "true"
+
   LOAD_LIMIT: "100"

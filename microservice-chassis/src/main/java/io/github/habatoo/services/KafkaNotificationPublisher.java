@@ -5,7 +5,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.kafka.sender.KafkaSender;
 import reactor.kafka.sender.SenderRecord;
@@ -15,7 +14,6 @@ import reactor.kafka.sender.SenderRecord;
  * Обеспечиват единообразную отправвку уведомлений всеми сервисами через сервис уведомлений.
  */
 @Slf4j
-@Component
 public class KafkaNotificationPublisher {
 
     private final KafkaSender<String, NotificationEvent> kafkaSender;
@@ -33,7 +31,7 @@ public class KafkaNotificationPublisher {
      * Метод для вызова отправки в сервис уведомлений.
      *
      * @param targetTopic топик для отправки.
-     * @param event единое событие уведомления для отправки.
+     * @param event       единое событие уведомления для отправки.
      * @return асинхронный объект результата уведомлений.
      */
     @CircuitBreaker(name = "kafka-publisher")

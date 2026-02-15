@@ -25,19 +25,3 @@ spring:
     user: ${DB_USER_NAME:bank_admin}
     password: ${DB_PASSWORD:bank_password}
     contexts: dev,test,default
-
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: http://keycloak/realms/bank/protocol/openid-connect/certs
-      client:
-        registration:
-          keycloak:
-            provider: keycloak
-            client-id: ${spring.application.name}
-            client-secret: ${KEYCLOAK_NOTIFICATION_SECRET:d5000040-69f9-75ef-b950-3925010052bf}
-            authorization-grant-type: client_credentials
-        provider:
-          keycloak:
-            issuer-uri: http://keycloak/realms/bank

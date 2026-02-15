@@ -1,7 +1,7 @@
 spring:
   load_limit: ${LOAD_LIMIT:100}
   kafka:
-    bootstrap-servers: ${KAFKA_URL:localhost:9092}
+    bootstrap-servers: ${KAFKA_URL:kafka:9092}
     topics:
       enabled: true
       topic: ${KAFKA_TOPIC:chassis}

@@ -28,6 +28,10 @@ spec:
                 secretKeyRef:
                   name: my-bank-common-secrets
                   key: KEYCLOAK_ACCOUNT_SECRET
+            - name: CHASSIS_OUTBOX_ENABLED
+              value: "false"
+            - name: CHASSIS_KAFKA_ENABLED
+              value: "true"
             - name: KEYCLOAK_HOST
               value: "keycloak"
             - name: KEYCLOAK_PORT

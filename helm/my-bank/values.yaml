@@ -45,7 +45,7 @@ global:
   gateway:
     host: "http://gateway:8080"
   kafka:
-    bootstrapServers: "kafka-broker:9092"
+    bootstrapServers: "kafka:9092"
     resilienceTopic: "system-alerts"
 
 keycloak:

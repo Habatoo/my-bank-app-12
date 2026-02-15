@@ -1,9 +1,7 @@
 package io.github.habatoo.configurations;
 
 import io.github.habatoo.dto.NotificationEvent;
-import io.github.habatoo.repositories.OutboxRepository;
 import io.github.habatoo.services.KafkaNotificationPublisher;
-import io.github.habatoo.services.OutboxClientService;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,11 +42,6 @@ class ServicesChassisAutoConfigurationTest {
         @Bean
         public CircuitBreakerRegistry circuitBreakerRegistry() {
             return mock(CircuitBreakerRegistry.class);
-        }
-
-        @Bean
-        public OutboxRepository outboxRepository() {
-            return mock(OutboxRepository.class);
         }
 
         @Bean
@@ -110,17 +103,6 @@ class ServicesChassisAutoConfigurationTest {
     }
 
     /**
-     * Проверка регистрации сервиса Outbox.
-     */
-    @Test
-    @DisplayName("Проверка: регистрация бина OutboxClientService")
-    void shouldRegisterOutboxClientService() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(OutboxClientService.class);
-        });
-    }
-
-    /**
      * Проверка отсутствия бинов при отсутствии конфигурации.
      */
     @Test
@@ -129,7 +111,7 @@ class ServicesChassisAutoConfigurationTest {
         new ApplicationContextRunner()
                 .run(context -> {
                     assertThat(context).doesNotHaveBean(KafkaNotificationPublisher.class);
-                    assertThat(context).doesNotHaveBean(OutboxClientService.class);
+                    assertThat(context).doesNotHaveBean(SenderOptions.class);
                 });
     }
 }

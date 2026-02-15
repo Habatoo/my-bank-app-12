@@ -23,6 +23,10 @@ spec:
             - configMapRef:
                 name: bank-common-config
           env:
+            - name: CHASSIS_OUTBOX_ENABLED
+              value: "false"
+            - name: CHASSIS_KAFKA_ENABLED
+              value: "false"
             - name: KEYCLOAK_ACCOUNT_SECRET
               valueFrom:
                 secretKeyRef:

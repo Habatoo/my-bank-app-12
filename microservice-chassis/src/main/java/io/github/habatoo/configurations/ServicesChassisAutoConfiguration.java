@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * Автоконфигурация сервисного слоя шасси микросервисов,
  * отвечает за регистрацию базовых инфраструктурных сервисов,
- * необходимых для работы системы уведомлений и реализации паттерна Outbox.
+ * необходимых для работы системы уведомлений.
  */
 @AutoConfiguration
 @ConditionalOnClass(KafkaSender.class)
@@ -82,21 +82,5 @@ public class ServicesChassisAutoConfiguration {
             @Lazy KafkaSender<String, NotificationEvent> kafkaSender,
             @Value("${spring.kafka.topics.topic:${KAFKA_TOPIC:chassis}}") String topic) {
         return new KafkaNotificationPublisher(kafkaSender, topic);
-    }
-
-    /**
-     * Создает бин сервиса управления Outbox-событиями.
-     *
-     * @param outboxRepository           репозиторий для хранения записей Outbox.
-     * @param kafkaNotificationPublisher клиент для отправки накопленных уведомлений через Kafka.
-     * @return настроенный экземпляр {@link OutboxClientService}.
-     */
-    @Bean
-    @ConditionalOnBean({OutboxRepository.class, CircuitBreakerRegistry.class})
-    @ConditionalOnMissingBean(OutboxClientService.class)
-    public OutboxClientService outboxService(
-            OutboxRepository outboxRepository,
-            KafkaNotificationPublisher kafkaNotificationPublisher) {
-        return new OutboxClientService(outboxRepository, kafkaNotificationPublisher);
     }
 }
