@@ -1,7 +1,7 @@
 package io.github.habatoo.configurations;
 
 import io.github.habatoo.dto.NotificationEvent;
-import io.github.habatoo.services.NotificationClientService;
+import io.github.habatoo.services.KafkaNotificationPublisher;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.common.circuitbreaker.configuration.CircuitBreakerConfigCustomizer;
@@ -28,9 +28,9 @@ class ResilienceChassisAutoConfigurationTest {
                     ResilienceChassisAutoConfiguration.class,
                     RefreshAutoConfiguration.class
             ))
-            .withBean(NotificationClientService.class, () -> {
-                NotificationClientService mock = mock(NotificationClientService.class);
-                when(mock.sendScheduled(any(NotificationEvent.class))).thenReturn(Mono.empty());
+            .withBean(KafkaNotificationPublisher.class, () -> {
+                KafkaNotificationPublisher mock = mock(KafkaNotificationPublisher.class);
+                when(mock.publish(anyString(), any(NotificationEvent.class))).thenReturn(Mono.empty());
                 return mock;
             });
 
@@ -63,15 +63,18 @@ class ResilienceChassisAutoConfigurationTest {
                 "resilience.instanceName=payment-cb"
         ).run(context -> {
             CircuitBreakerRegistry registry = context.getBean(CircuitBreakerRegistry.class);
-            NotificationClientService notificationService = context.getBean(NotificationClientService.class);
+            KafkaNotificationPublisher notificationService = context.getBean(KafkaNotificationPublisher.class);
 
             CircuitBreaker circuitBreaker = registry.circuitBreaker("payment-cb");
 
             circuitBreaker.transitionToOpenState();
 
+            ArgumentCaptor<String> topicCaptor = ArgumentCaptor.forClass(String.class);
             ArgumentCaptor<NotificationEvent> eventCaptor = ArgumentCaptor.forClass(NotificationEvent.class);
-            verify(notificationService, timeout(2000)).sendScheduled(eventCaptor.capture());
+            verify(notificationService, timeout(2000)).publish(topicCaptor.capture(), eventCaptor.capture());
 
+            String captureTopic = topicCaptor.getValue();
+            assertThat(captureTopic).isEqualTo("system-alerts");
             NotificationEvent capturedEvent = eventCaptor.getValue();
             assertThat(capturedEvent.getSourceService()).isEqualTo("banking-service");
             assertThat(capturedEvent.getPayload()).containsEntry("toState", "OPEN");
@@ -83,13 +86,14 @@ class ResilienceChassisAutoConfigurationTest {
     void shouldHandleDefaultAppNameInNotifications() {
         contextRunner.run(context -> {
             CircuitBreakerRegistry registry = context.getBean(CircuitBreakerRegistry.class);
-            NotificationClientService notificationService = context.getBean(NotificationClientService.class);
+            KafkaNotificationPublisher notificationService = context.getBean(KafkaNotificationPublisher.class);
 
             CircuitBreaker cb = registry.circuitBreaker("default-cb");
             cb.transitionToDisabledState();
 
+            ArgumentCaptor<String> topicCaptor = ArgumentCaptor.forClass(String.class);
             ArgumentCaptor<NotificationEvent> eventCaptor = ArgumentCaptor.forClass(NotificationEvent.class);
-            verify(notificationService, timeout(2000)).sendScheduled(eventCaptor.capture());
+            verify(notificationService, timeout(2000)).publish(topicCaptor.capture(), eventCaptor.capture());
 
             assertThat(eventCaptor.getValue().getSourceService()).isEqualTo("unknown-service");
         });

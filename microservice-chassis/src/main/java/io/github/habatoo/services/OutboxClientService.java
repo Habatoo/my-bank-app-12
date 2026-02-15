@@ -7,12 +7,14 @@ import io.github.habatoo.models.Outbox;
 import io.github.habatoo.repositories.OutboxRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Сервис для реализации паттерна "Transactional Outbox".
@@ -20,16 +22,6 @@ import java.util.UUID;
  * Обеспечивает гарантированную доставку уведомлений путем их предварительного сохранения
  * в промежуточную таблицу базы данных. Это позволяет избежать потери событий при сбоях
  * внешнего сервиса уведомлений или брокера сообщений.
- * </p>
- * <p>
- * Основные функции:
- * <ul>
- * <li>Сохранение новых событий в статусе {@code NEW} в рамках текущей транзакции.</li>
- * <li>Периодическая обработка и отправка сохраненных событий через {@link NotificationClientService}.</li>
- * <li>Обновление статусов событий на {@code PROCESSED} в случае успеха или {@code FAILED} при ошибке.</li>
- * <li>Автоматическая очистка устаревших записей из базы данных.</li>
- * </ul>
- * </p>
  *
  * @see <a href="https://microservices.io/patterns/data/transactional-outbox.html">Pattern: Transactional Outbox</a>
  */
@@ -38,11 +30,19 @@ import java.util.UUID;
 public class OutboxClientService {
 
     private static final String STATUS_NEW = "NEW";
+
     private static final String STATUS_PROCESSED = "PROCESSED";
+
     private static final String STATUS_FAILED = "FAILED";
 
+    private final AtomicBoolean processing = new AtomicBoolean(false);
+
     private final OutboxRepository outboxRepository;
-    private final NotificationClientService notificationClient;
+
+    private final KafkaNotificationPublisher kafkaNotificationPublisher;
+
+    @Value("${spring.load_limit:${LOAD_LIMIT:100}}")
+    private Integer loadLimit;
 
     /**
      * Сохраняет событие в таблицу Outbox для последующей асинхронной обработки.
@@ -73,7 +73,12 @@ public class OutboxClientService {
      * </p>
      */
     public void processOutboxEvents() {
+        if (!processing.compareAndSet(false, true)) {
+            return;
+        }
+
         outboxRepository.findAllByStatus(STATUS_NEW)
+                .limitRate(loadLimit)
                 .flatMap(entity ->
                         processEvent(entity)
                                 .then(markAsProcessed(entity.getId()))
@@ -83,6 +88,7 @@ public class OutboxClientService {
                                     return markAsFailed(entity.getId());
                                 })
                 )
+                .doFinally(signal -> processing.set(false))
                 .subscribe();
     }
 
@@ -108,7 +114,9 @@ public class OutboxClientService {
     private Mono<Void> processEvent(Outbox entity) {
         NotificationEvent event = mapToEvent(entity);
 
-        return notificationClient.sendScheduled(event);
+        return kafkaNotificationPublisher.publish(event)
+                .doOnError(e -> log.error("Kafka ошибка для события {}: {}",
+                        entity.getId(), e.getMessage()));
     }
 
     private Map<String, Object> convertEventToMap(NotificationEvent event) {

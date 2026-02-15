@@ -4,7 +4,7 @@ import io.github.habatoo.dto.NotificationEvent;
 import io.github.habatoo.dto.enums.EventStatus;
 import io.github.habatoo.dto.enums.EventType;
 import io.github.habatoo.properties.ResilienceProperties;
-import io.github.habatoo.services.NotificationClientService;
+import io.github.habatoo.services.KafkaNotificationPublisher;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.context.annotation.Bean;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.Map;
@@ -31,10 +32,13 @@ import java.util.Map;
 @EnableConfigurationProperties(ResilienceProperties.class)
 public class ResilienceChassisAutoConfiguration {
 
-    private final NotificationClientService notificationClientService;
+    private final KafkaNotificationPublisher kafkaNotificationPublisher;
 
     @Value("${spring.application.name:unknown-service}")
     private String applicationName;
+
+    @Value("${spring.kafka.resilience-topic:system-alerts}")
+    private String resilienceTopic;
 
     /**
      * Создает и настраивает реестр CircuitBreaker.
@@ -102,16 +106,19 @@ public class ResilienceChassisAutoConfiguration {
             CircuitBreakerOnStateTransitionEvent stateEvent,
             CircuitBreaker.State from,
             CircuitBreaker.State to) {
-        notificationClientService.sendScheduled(NotificationEvent.builder()
-                        .eventType(EventType.SYSTEM_ALERT)
-                        .status(EventStatus.FAILURE)
-                        .message(String.format("CircuitBreaker '%s' в сервисе '%s' изменил состояние: %s -> %s",
-                                stateEvent.getCircuitBreakerName(), applicationName, from, to))
-                        .sourceService(applicationName)
-                        .payload(Map.of("fromState", from.name(), "toState", to.name()))
-                        .build())
-                .doOnError(e -> log.error(
-                        "Не удалось отправить Resilience alert в сервис уведомлений: {}", e.getMessage()))
+
+        NotificationEvent notificationEvent = NotificationEvent.builder()
+                .eventType(EventType.SYSTEM_ALERT)
+                .status(EventStatus.FAILURE)
+                .message(String.format("CircuitBreaker '%s' в сервисе '%s' изменил состояние: %s -> %s",
+                        stateEvent.getCircuitBreakerName(), applicationName, from, to))
+                .sourceService(applicationName)
+                .payload(Map.of("fromState", from.name(), "toState", to.name()))
+                .build();
+
+        Mono.defer(() -> kafkaNotificationPublisher.publish(resilienceTopic, notificationEvent))
+                .timeout(Duration.ofSeconds(2))
+                .doOnError(e -> log.warn("Kafka недоступна. Лог CircuitBreaker сохранен только локально. Error: {}", e.getMessage()))
                 .subscribe();
     }
 
