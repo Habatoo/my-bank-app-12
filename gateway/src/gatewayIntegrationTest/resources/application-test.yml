@@ -5,6 +5,17 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
+  autoconfigure:
+    exclude:
+      - io.github.habatoo.configurations.ResilienceChassisAutoConfiguration
+      - io.github.habatoo.configurations.ServicesChassisAutoConfiguration
+      - io.github.habatoo.configurations.OutboxChassisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.r2dbc.R2dbcRepositoriesAutoConfiguration;
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+      - org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+      - org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration;
+
 resilience4j:
   circuitbreaker:
     instances:

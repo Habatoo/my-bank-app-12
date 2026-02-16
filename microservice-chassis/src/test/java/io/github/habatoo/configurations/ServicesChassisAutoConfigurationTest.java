@@ -1,7 +1,8 @@
 package io.github.habatoo.configurations;
 
-import io.github.habatoo.dto.NotificationEvent;
 import io.github.habatoo.services.KafkaNotificationPublisher;
+import io.github.habatoo.services.NoOpNotificationPublisher;
+import io.github.habatoo.services.NotificationPublisher;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,9 +11,7 @@ import org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.context.runner.ReactiveWebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.core.KafkaAdmin;
-import reactor.kafka.sender.KafkaSender;
 import reactor.kafka.sender.SenderOptions;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,32 +28,12 @@ class ServicesChassisAutoConfigurationTest {
             .withConfiguration(AutoConfigurations.of(
                     ServicesChassisAutoConfiguration.class,
                     KafkaAutoConfiguration.class
-            ))
-            .withPropertyValues(
-                    "spring.main.allow-bean-definition-overriding=true",
-                    "spring.kafka.bootstrap-servers=localhost:9092",
-                    "spring.kafka.topics.topic=test-topic",
-                    "spring.kafka.topics.enabled=true"
-            )
-            .withUserConfiguration(MockConfig.class);
+            ));
 
     static class MockConfig {
         @Bean
         public CircuitBreakerRegistry circuitBreakerRegistry() {
             return mock(CircuitBreakerRegistry.class);
-        }
-
-        @Bean
-        @Primary
-        public KafkaAdmin kafkaAdmin() {
-            return mock(KafkaAdmin.class);
-        }
-
-        @Bean
-        @Primary
-        @SuppressWarnings("unchecked")
-        public KafkaSender<String, NotificationEvent> kafkaSender() {
-            return mock(KafkaSender.class);
         }
     }
 
@@ -86,20 +65,56 @@ class ServicesChassisAutoConfigurationTest {
     @Test
     @DisplayName("Проверка: регистрация бина KafkaAdmin.NewTopics")
     void shouldRegisterKafkaAdminNewTopics() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(KafkaAdmin.NewTopics.class);
-        });
+        contextRunner
+                .withPropertyValues(
+                        "chassis.kafka.enabled=true",
+                        "spring.kafka.topics.enabled=true",
+                        "spring.kafka.bootstrap-servers=localhost:9092"
+                )
+                .withUserConfiguration(MockConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(KafkaAdmin.NewTopics.class);
+                });
     }
 
     /**
      * Проверка регистрации издателя уведомлений Kafka.
      */
     @Test
-    @DisplayName("Проверка: регистрация бина KafkaNotificationPublisher")
+    @DisplayName("Должен создать KafkaNotificationPublisher, когда chassis.kafka.enabled=true")
     void shouldRegisterKafkaNotificationPublisher() {
-        contextRunner.run(context -> {
-            assertThat(context).hasSingleBean(KafkaNotificationPublisher.class);
-        });
+        contextRunner
+                .withPropertyValues(
+                        "chassis.kafka.enabled=true",
+                        "spring.kafka.bootstrap-servers=localhost:9092",
+                        "spring.kafka.topics.enabled=true"
+                )
+                .withUserConfiguration(MockConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(KafkaNotificationPublisher.class);
+                    assertThat(context).doesNotHaveBean(NoOpNotificationPublisher.class);
+                    assertThat(context).hasSingleBean(SenderOptions.class);
+                });
+    }
+
+    /**
+     * Проверка регистрации издателя уведомлений без Kafka.
+     */
+    @Test
+    @DisplayName("Должен создать NoOpNotificationPublisher, когда chassis.kafka.enabled=false")
+    void shouldRegisterNoOpPublisherWhenDisabled() {
+        contextRunner
+                .withPropertyValues(
+                        "chassis.kafka.enabled=false"
+                )
+                .withUserConfiguration(MockConfig.class)
+                .run(context -> {
+                    assertThat(context).hasSingleBean(NotificationPublisher.class);
+                    assertThat(context.getBean(NotificationPublisher.class))
+                            .isInstanceOf(NoOpNotificationPublisher.class);
+
+                    assertThat(context).doesNotHaveBean(KafkaNotificationPublisher.class);
+                });
     }
 
     /**

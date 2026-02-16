@@ -20,7 +20,11 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * для информирования пользователя о временной недоступности микросервисов.
  * </p>
  */
-@WebFluxTest(controllers = FallbackController.class)
+@WebFluxTest(controllers = FallbackController.class,
+        properties = {
+                "chassis.outbox.enabled=false",
+                "chassis.kafka.enabled=false"
+        })
 @DisplayName("Юнит-тесты контроллера FallbackController")
 class FallbackControllerCashedTest {
 

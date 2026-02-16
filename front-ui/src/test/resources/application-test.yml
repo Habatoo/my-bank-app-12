@@ -10,3 +10,9 @@ spring:
       resourceserver:
         jwt:
           enabled: false
+
+  chassis:
+    outbox:
+      enabled: false
+    kafka:
+      enabled: false

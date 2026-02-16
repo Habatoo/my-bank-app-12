@@ -57,20 +57,6 @@ class OutboxChassisAutoConfigurationTest {
                 });
     }
 
-    /**
-     * Тест: Бины НЕ должны создаваться, если нет OutboxRepository (случай front-ui)
-     */
-    @Test
-    @DisplayName("Проверка: отсутствие бина при отсутствии OutboxRepository")
-    void shouldNotRegisterWithoutRepository() {
-        contextRunner
-                .withBean(KafkaNotificationPublisher.class, () -> mock(KafkaNotificationPublisher.class))
-                .withBean(CircuitBreakerRegistry.class, () -> mock(CircuitBreakerRegistry.class))
-                .run(context -> {
-                    assertThat(context).doesNotHaveBean(OutboxClientService.class);
-                });
-    }
-
     static class MockConfig {
         @Bean
         public CircuitBreakerRegistry circuitBreakerRegistry() {
