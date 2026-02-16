@@ -113,7 +113,13 @@ chmod +x deploy.sh
 - Проброс портов для БД: kubectl port-forward svc/bank-dev-account-db 5432:5432 -n dev
 - Доступ к Keycloak: kubectl port-forward svc/keycloak 8080:8080 -n dev
 - Логи сервиса: kubectl logs -l app=gateway -n dev
-
+  
+5. UI 
+- `kubectl get svc -n dev` ->  `kubectl port-forward -n dev kafka-ui-service 8888:8080`.
+- http://localhost:8888
+- Перейдите в раздел Topics.
+- Выберите топик (например, system-alerts из вашего конфига).
+- Нажмите вкладку Messages. Вы увидите поток данных в реальном времени
 
 ## Тесты
 Из корневой директории - запуск линтера и тестов Helm:

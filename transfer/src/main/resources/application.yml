@@ -5,7 +5,7 @@ spring:
       host: ${GATEWAY_HOST:http://account:8080}
     kafka:
       topics:
-        topic: ${KAFKA_TOPIC:transfer-notification}
+        topic: ${KAFKA_TOPIC:transfer-notifications}
 
   r2dbc:
     url: r2dbc:postgresql://${DB_TRANSFER_HOST:localhost}:${DB_TRANSFER_PORT:5432}/${DB_TRANSFER_NAME:transfer_db}
