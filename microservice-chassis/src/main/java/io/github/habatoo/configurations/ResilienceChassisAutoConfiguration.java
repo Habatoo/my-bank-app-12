@@ -4,7 +4,7 @@ import io.github.habatoo.dto.NotificationEvent;
 import io.github.habatoo.dto.enums.EventStatus;
 import io.github.habatoo.dto.enums.EventType;
 import io.github.habatoo.properties.ResilienceProperties;
-import io.github.habatoo.services.KafkaNotificationPublisher;
+import io.github.habatoo.services.NotificationPublisher;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -32,7 +32,7 @@ import java.util.Map;
 @EnableConfigurationProperties(ResilienceProperties.class)
 public class ResilienceChassisAutoConfiguration {
 
-    private final KafkaNotificationPublisher kafkaNotificationPublisher;
+    private final NotificationPublisher kafkaNotificationPublisher;
 
     @Value("${spring.application.name:unknown-service}")
     private String applicationName;

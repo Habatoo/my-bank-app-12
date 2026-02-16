@@ -24,7 +24,8 @@ import org.springframework.context.annotation.FilterType;
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = {
-                        io.github.habatoo.services.OutboxClientService.class
+                        io.github.habatoo.services.OutboxClientService.class,
+                        io.github.habatoo.repositories.OutboxRepository.class
                 }
         )
 )

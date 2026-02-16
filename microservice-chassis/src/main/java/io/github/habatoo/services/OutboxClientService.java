@@ -39,7 +39,7 @@ public class OutboxClientService {
 
     private final OutboxRepository outboxRepository;
 
-    private final KafkaNotificationPublisher kafkaNotificationPublisher;
+    private final NotificationPublisher kafkaNotificationPublisher;
 
     @Value("${spring.load_limit:${LOAD_LIMIT:100}}")
     private Integer loadLimit;

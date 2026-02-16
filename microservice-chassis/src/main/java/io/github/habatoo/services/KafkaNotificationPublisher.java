@@ -10,11 +10,11 @@ import reactor.kafka.sender.KafkaSender;
 import reactor.kafka.sender.SenderRecord;
 
 /**
- * Клиент для отправки notifications через модульу ведомлений.
+ * Клиент для отправки notifications через модуль уведомлений.
  * Обеспечиват единообразную отправвку уведомлений всеми сервисами через сервис уведомлений.
  */
 @Slf4j
-public class KafkaNotificationPublisher {
+public class KafkaNotificationPublisher implements NotificationPublisher {
 
     private final KafkaSender<String, NotificationEvent> kafkaSender;
 

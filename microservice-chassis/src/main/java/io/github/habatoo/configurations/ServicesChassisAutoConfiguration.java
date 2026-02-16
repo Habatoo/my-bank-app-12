@@ -1,14 +1,12 @@
 package io.github.habatoo.configurations;
 
 import io.github.habatoo.dto.NotificationEvent;
-import io.github.habatoo.repositories.OutboxRepository;
 import io.github.habatoo.services.KafkaNotificationPublisher;
-import io.github.habatoo.services.OutboxClientService;
-import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.habatoo.services.NoOpNotificationPublisher;
+import io.github.habatoo.services.NotificationPublisher;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,11 +28,11 @@ import java.util.Map;
  */
 @AutoConfiguration
 @ConditionalOnClass(KafkaSender.class)
-@ConditionalOnProperty(prefix = "chassis.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class ServicesChassisAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(SenderOptions.class)
+    @ConditionalOnProperty(prefix = "chassis.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
     public SenderOptions<String, NotificationEvent> senderOptions(KafkaProperties kafkaProperties) {
 
         Map<String, Object> props = new HashMap<>(kafkaProperties.buildProducerProperties());
@@ -51,6 +49,7 @@ public class ServicesChassisAutoConfiguration {
     @Bean
     @Lazy
     @ConditionalOnMissingBean(KafkaSender.class)
+    @ConditionalOnProperty(prefix = "chassis.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
     public KafkaSender<String, NotificationEvent> kafkaSender(
             SenderOptions<String, NotificationEvent> senderOptions) {
         return KafkaSender.create(senderOptions);
@@ -63,6 +62,7 @@ public class ServicesChassisAutoConfiguration {
             havingValue = "true",
             matchIfMissing = false
     )
+    @ConditionalOnProperty(prefix = "chassis.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
     public KafkaAdmin.NewTopics topics(
             @Value("${spring.kafka.topics.partitions:3}") int partitions,
             @Value("${spring.kafka.topics.replicas:1}") short replicas,
@@ -77,10 +77,16 @@ public class ServicesChassisAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean(KafkaNotificationPublisher.class)
-    public KafkaNotificationPublisher kafkaNotificationPublisher(
+    @ConditionalOnProperty(prefix = "chassis.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
+    public NotificationPublisher kafkaNotificationPublisher(
             @Lazy KafkaSender<String, NotificationEvent> kafkaSender,
             @Value("${spring.kafka.topics.topic:${KAFKA_TOPIC:chassis}}") String topic) {
         return new KafkaNotificationPublisher(kafkaSender, topic);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(NotificationPublisher.class)
+    public NotificationPublisher noOpPublisher() {
+        return new NoOpNotificationPublisher();
     }
 }
