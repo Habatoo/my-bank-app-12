@@ -115,7 +115,7 @@ chmod +x deploy.sh
 - Логи сервиса: kubectl logs -l app=gateway -n dev
   
 5. UI Kafka
-- `kubectl get svc -n dev` ->  `kubectl port-forward -n dev kafka-ui-service 8888:8080`.
+- `kubectl get svc -n dev` ->  `kubectl port-forward -n dev svc/kafka-ui-service 8888:8080`.
 - http://localhost:8888
 - Перейдите в раздел Topics.
 - Выберите топик (например, system-alerts из вашего конфига).
