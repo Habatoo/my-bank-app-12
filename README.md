@@ -114,7 +114,7 @@ chmod +x deploy.sh
 - Доступ к Keycloak: kubectl port-forward svc/keycloak 8080:8080 -n dev
 - Логи сервиса: kubectl logs -l app=gateway -n dev
   
-5. UI 
+5. UI Kafka
 - `kubectl get svc -n dev` ->  `kubectl port-forward -n dev kafka-ui-service 8888:8080`.
 - http://localhost:8888
 - Перейдите в раздел Topics.
@@ -126,7 +126,8 @@ chmod +x deploy.sh
 ```bash
 # Проверка синтаксиса чартов
 helm lint ./helm/my-bank -f ./helm/my-bank/values.yaml
-
+```
+```bash
 # Запуск интеграционных тестов после деплоя
 helm test bank-dev -n dev --logs
 ```
