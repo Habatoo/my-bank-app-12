@@ -1,6 +1,7 @@
 io.github.habatoo.configurations.ExceptionChassisAutoConfiguration
 io.github.habatoo.configurations.JsonChassisAutoConfiguration
 io.github.habatoo.configurations.LoggingChassisAutoConfiguration
+io.github.habatoo.configurations.OutboxChassisAutoConfiguration
 io.github.habatoo.configurations.RateChassisAutoConfiguration
 io.github.habatoo.configurations.RefreshLoggingAutoConfiguration
 io.github.habatoo.configurations.ResilienceChassisAutoConfiguration

@@ -1,9 +1,12 @@
 package io.github.habatoo.cofigurations;
 
+import io.github.habatoo.controllers.MainController;
+import io.github.habatoo.controllers.OperationsController;
 import io.github.habatoo.services.CashFrontService;
 import io.github.habatoo.services.FrontService;
 import io.github.habatoo.services.TransferFrontService;
 import io.github.habatoo.services.UserFrontService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,10 @@ import org.springframework.security.oauth2.client.registration.ReactiveClientReg
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 /**
  * Тесты для проверки конфигурации безопасности приложения.
@@ -21,7 +28,13 @@ import org.springframework.test.web.reactive.server.WebTestClient;
  * и работу цепочки фильтров безопасности WebFlux.
  * </p>
  */
-@WebFluxTest
+@WebFluxTest(
+        controllers = {MainController.class, OperationsController.class},
+        properties = {
+                "chassis.outbox.enabled=false",
+                "chassis.kafka.enabled=false"
+        }
+)
 @Import(SecurityAutoConfiguration.class)
 @DisplayName("Юнит-тесты конфигурации безопасности (SecurityAutoConfiguration)")
 class SecurityAutoConfigurationTest {
@@ -43,6 +56,12 @@ class SecurityAutoConfigurationTest {
 
     @MockitoBean
     private UserFrontService userFrontService;
+
+    @BeforeEach
+    void setUp() {
+        when(frontService.showMainPage(any(), any()))
+                .thenReturn(Mono.empty());
+    }
 
     /**
      * Проверяет, что доступ к защищенным ресурсам (например, /main)

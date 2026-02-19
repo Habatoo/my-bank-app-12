@@ -1,6 +1,9 @@
 spring:
   application:
     name: account
+  kafka:
+    topics:
+      topic: ${KAFKA_TOPIC:account-notification}
 
   r2dbc:
     url: r2dbc:postgresql://${DB_ACCOUNT_HOST:bank-dev-account-db.dev.svc.cluster.local}:${DB_ACCOUNT_PORT:5432}/${DB_ACCOUNT_NAME:account_db}?sslMode=disable

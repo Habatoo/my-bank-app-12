@@ -1,8 +1,24 @@
 spring:
+  load_limit: ${LOAD_LIMIT:100}
+  kafka:
+    bootstrap-servers: ${KAFKA_URL:kafka:9092}
+    topics:
+      enabled: true
+      topic: ${KAFKA_TOPIC:chassis}
+      partitions: ${KAFKA_PARTITIONS:3}
+      replicas: ${KAFKA_REPLICAS:1}
+      resilience-name: ${KAFKA_RESILIENCE_TOPIC:system-alerts}
+    admin:
+      client-id: my-bank
+      fail-fast: true
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:my-bank-consumer}
+      properties:
+        spring.json.trusted.packages: "io.github.habatoo.dto"
+
   application:
-    name: chassis-template
     notification:
-      url: ${NOTIFICATION_URL:http://notification/notification}
+      url: ${NOTIFICATIO${KAFKA_HOST:http://kafka}N_URL:http://notification/notification}
     gateway:
       host: ${GATEWAY_HOST:http://gateway:8080}
     date: yyyy-MM-dd HH:mm:ss
@@ -63,6 +79,14 @@ spring:
         provider:
           keycloak:
             issuer-uri: http://${KEYCLOAK_HOST:localhost}:${KEYCLOAK_PORT:8082}/realms/${KEYCLOAK_REALM:bank}
+resilience4j:
+  circuitbreaker:
+    instances:
+      kafka-publisher:
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 2
 
 management:
   endpoints:

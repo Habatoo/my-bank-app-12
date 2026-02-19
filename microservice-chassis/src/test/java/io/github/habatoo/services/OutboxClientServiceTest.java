@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -31,13 +32,18 @@ import static org.mockito.Mockito.*;
 class OutboxClientServiceTest {
 
     private final UUID entityId = UUID.randomUUID();
+
     @Mock
     private OutboxRepository outboxRepository;
+
     @Mock
-    private NotificationClientService notificationClient;
+    private KafkaNotificationPublisher kafkaNotificationPublisher;
+
     @InjectMocks
     private OutboxClientService outboxClientService;
+
     private NotificationEvent testEvent;
+
     private Outbox testEntity;
 
     @BeforeEach
@@ -64,6 +70,8 @@ class OutboxClientServiceTest {
                         "payload", Map.of("key", "value")
                 ))
                 .build();
+
+        ReflectionTestUtils.setField(outboxClientService, "loadLimit", 100);
     }
 
     @Test
@@ -81,12 +89,12 @@ class OutboxClientServiceTest {
     @DisplayName("Успешная обработка событий: NEW -> PROCESSED")
     void processOutboxEventsSuccessTest() {
         when(outboxRepository.findAllByStatus("NEW")).thenReturn(Flux.just(testEntity));
-        when(notificationClient.sendScheduled(any(NotificationEvent.class))).thenReturn(Mono.empty());
+        when(kafkaNotificationPublisher.publish(any(NotificationEvent.class))).thenReturn(Mono.empty());
         when(outboxRepository.updateStatus(entityId, "PROCESSED")).thenReturn(Mono.empty());
 
         outboxClientService.processOutboxEvents();
 
-        verify(notificationClient, timeout(1000)).sendScheduled(any(NotificationEvent.class));
+        verify(kafkaNotificationPublisher, timeout(1000)).publish(any(NotificationEvent.class));
         verify(outboxRepository, timeout(1000)).updateStatus(entityId, "PROCESSED");
     }
 
@@ -96,7 +104,7 @@ class OutboxClientServiceTest {
         lenient().when(outboxRepository.updateStatus(any(), anyString())).thenReturn(Mono.empty());
 
         when(outboxRepository.findAllByStatus("NEW")).thenReturn(Flux.just(testEntity));
-        when(notificationClient.sendScheduled(any(NotificationEvent.class)))
+        when(kafkaNotificationPublisher.publish(any(NotificationEvent.class)))
                 .thenReturn(Mono.error(new RuntimeException("Network error")));
 
         outboxClientService.processOutboxEvents();

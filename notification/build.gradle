@@ -3,7 +3,6 @@ plugins {
     id 'jacoco'
     id 'maven-publish'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'org.springframework.cloud.contract' version '4.1.4'
     id 'org.springframework.boot' version '3.5.8'
 }
 
@@ -27,7 +26,6 @@ sourceSets {
     test {
         java {
             srcDir 'src/test/java'
-            srcDir "$buildDir/generated-test-sources/contracts"
         }
         resources.srcDir 'src/test/resources'
     }
@@ -49,24 +47,17 @@ configurations {
 dependencies {
     api project(':microservice-chassis')
 
-    api 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    api 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
-
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
-    testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
-    contractTestImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
     testImplementation 'io.rest-assured:spring-web-test-client'
 
     notificationIntegrationTestImplementation 'org.springframework.boot:spring-boot-starter-test'
     notificationIntegrationTestImplementation 'io.projectreactor:reactor-test'
-    notificationIntegrationTestImplementation 'org.springframework.security:spring-security-test'
 
     notificationIntegrationTestImplementation 'org.testcontainers:postgresql'
     notificationIntegrationTestImplementation 'org.testcontainers:r2dbc'
@@ -75,8 +66,6 @@ dependencies {
     notificationIntegrationTestImplementation 'org.springframework.boot:spring-boot-test-autoconfigure'
     notificationIntegrationTestImplementation 'com.squareup.okhttp3:mockwebserver'
     notificationIntegrationTestImplementation 'io.micrometer:micrometer-test'
-    notificationIntegrationTestImplementation 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
-    notificationIntegrationTestImplementation 'org.springframework.cloud:spring-cloud-contract-verifier'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -107,7 +96,6 @@ tasks.register('notificationIntegrationTest', Test) {
 
     useJUnitPlatform()
     shouldRunAfter test
-    dependsOn 'generateContractTests'
 }
 
 tasks.named('processNotificationIntegrationTestResources') {
@@ -128,17 +116,10 @@ tasks.named('processTestResources') {
 
 check.dependsOn notificationIntegrationTest
 
-contracts {
-    baseClassForTests = 'io.github.habatoo.controllers.BaseContractTest'
-    testMode = 'WEBTESTCLIENT'
-    contractsDslDir = file("$projectDir/src/test/resources/contracts")
-}
-
 publishing {
     publications {
         create("mavenJava", MavenPublication) {
             from components.java
-            artifact tasks.named("verifierStubsJar")
         }
     }
 }
@@ -153,12 +134,4 @@ processResources {
 tasks.named('bootJar') {
     requiresUnpack '**/db/changelog/*.yaml'
     from sourceSets.main.output
-}
-
-tasks.named('copyContracts') {
-    mustRunAfter tasks.named('bootJar')
-}
-
-tasks.named('verifierStubsJar') {
-    dependsOn tasks.named('bootJar')
 }

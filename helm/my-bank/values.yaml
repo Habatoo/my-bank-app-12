@@ -44,6 +44,9 @@ global:
     realm: "bank"
   gateway:
     host: "http://gateway:8080"
+  kafka:
+    bootstrapServers: "kafka:9092"
+    resilienceTopic: "system-alerts"
 
 keycloak:
   service:
@@ -143,3 +146,42 @@ keycloak:
 
   persistence:
     deployPostgresql: true
+
+kafka:
+  fullnameOverride: "kafka"
+  podSecurityContext:
+    enabled: false
+  containerSecurityContext:
+    enabled: false
+
+  image:
+    registry: docker.io
+    repository: bitnamilegacy/kafka
+    tag: "4.0.0-debian-12-r10"
+
+  kraft:
+    enabled: true
+    clusterId: "r4L9u9s8ST67S869S1GvEA"
+
+  controller:
+    replicaCount: 1
+
+  broker:
+    replicaCount: 1
+    persistence:
+      enabled: true
+      size: 2Gi
+
+  listeners:
+    client:
+      protocol: PLAINTEXT
+    controller:
+      protocol: PLAINTEXT
+
+  provisioning:
+    enabled: false
+
+  sasl:
+    enabled: false
+  rbac:
+    create: false

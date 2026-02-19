@@ -1,5 +1,6 @@
 package io.github.habatoo.configurations;
 
+import io.github.habatoo.controllers.FallbackController;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,13 @@ import org.springframework.test.web.reactive.server.WebTestClient;
  * без загрузки полного контекста приложения.
  * </p>
  */
-@WebFluxTest
+@WebFluxTest(
+        controllers = FallbackController.class,
+        properties = {
+                "chassis.outbox.enabled=false",
+                "chassis.kafka.enabled=false"
+        }
+)
 @Import(SecurityAutoConfiguration.class)
 @DisplayName("Тестирование конфигурации безопасности (SecurityAutoConfiguration)")
 class SecurityAutoConfigurationCashedTest {

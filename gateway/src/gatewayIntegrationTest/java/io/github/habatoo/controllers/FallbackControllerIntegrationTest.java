@@ -1,41 +1,34 @@
 package io.github.habatoo.controllers;
 
-import io.github.habatoo.GatewayApplication;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
-import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockJwt;
 
 /**
  * Интеграционные тесты для контроллера FallbackController.
  */
-@SpringBootTest(
-        classes = GatewayApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+@WebFluxTest(
+        controllers = FallbackController.class,
         properties = {
-                "spring.main.allow-bean-definition-overriding=true",
-                "spring.liquibase.enabled=false",
-                "spring.security.oauth2.client.registration.keycloak.enabled=false",
-                "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration,org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration,org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration"
+                "chassis.outbox.enabled=false",
+                "chassis.kafka.enabled=false"
         }
 )
 @ActiveProfiles("test")
-@AutoConfigureWebTestClient
-@ContextConfiguration(classes = FallbackControllerIntegrationTest.TestSecurityConfig.class)
 class FallbackControllerIntegrationTest {
+
+    private static final String mockUsername = "test-user";
 
     @MockitoBean
     private ReactiveClientRegistrationRepository reactiveClientRegistrationRepository;
@@ -54,8 +47,12 @@ class FallbackControllerIntegrationTest {
      * Ожидается статус 503 и соответствующее сообщение.
      */
     @Test
+    @DisplayName("Проверка fallback для недоступного сервиса с имитацией JW и ROLE_USER")
     void cashFallbackTest() {
-        webTestClient.get()
+        webTestClient.mutateWith(mockJwt()
+                        .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                        .jwt(jwt -> jwt.claim("preferred_username", mockUsername)))
+                .get()
                 .uri("/fallback/cash-unavailable")
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
@@ -68,8 +65,12 @@ class FallbackControllerIntegrationTest {
      * Ожидается статус 503 и соответствующее сообщение.
      */
     @Test
+    @DisplayName("Проверка fallback для недоступного сервиса с имитацией JWT")
     void accountFallbackTest() {
-        webTestClient.get()
+        webTestClient.mutateWith(mockJwt()
+                        .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                        .jwt(jwt -> jwt.claim("preferred_username", mockUsername)))
+                .get()
                 .uri("/fallback/account-unavailable")
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
@@ -82,31 +83,16 @@ class FallbackControllerIntegrationTest {
      * Ожидается статус 503 и соответствующее сообщение.
      */
     @Test
+    @DisplayName("Проверка fallback для переводов с имитацией JWT")
     void transferFallbackTest() {
-        webTestClient.get()
+        webTestClient.mutateWith(mockJwt()
+                        .authorities(new SimpleGrantedAuthority("ROLE_USER"))
+                        .jwt(jwt -> jwt.claim("preferred_username", mockUsername)))
+                .get()
                 .uri("/fallback/transfer-unavailable")
                 .exchange()
                 .expectStatus().isEqualTo(HttpStatus.SERVICE_UNAVAILABLE)
                 .expectBody(String.class)
                 .isEqualTo("Сервис переводов временно недоступен. Попробуйте позже.");
-    }
-
-    /**
-     * Тестовая конфигурация Security для отключения всех ограничений.
-     * Все запросы разрешены, CSRF отключен.
-     *
-     * @Primary гарантирует переопределение любой другой Security-конфигурации.
-     */
-    @Configuration
-    static class TestSecurityConfig {
-
-        @Bean
-        @Primary
-        public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-            return http
-                    .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                    .authorizeExchange(auth -> auth.anyExchange().permitAll())
-                    .build();
-        }
     }
 }

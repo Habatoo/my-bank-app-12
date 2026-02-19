@@ -6,6 +6,9 @@ import io.github.habatoo.repositories.NotificationRepository;
 import io.github.habatoo.services.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -22,6 +25,22 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
 
     /**
+     * Слушает все бизнес-топики и топик системных алертов.
+     * Используем массив топиков. Значения подтягиваются из ENV или дефолтов.
+     */
+    @KafkaListener(topics = {
+            "${KAFKA_ACCOUNT_TOPIC:account-notifications}",
+            "${KAFKA_CASH_TOPIC:cash-notifications}",
+            "${KAFKA_TRANSFER_TOPIC:transfer-notifications}",
+            "${spring.kafka.resilience-topic:system-alerts}"
+    }, groupId = "${spring.kafka.consumer.group-id:notification-group}")
+    public void listen(NotificationEvent event, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+        log.info("Сообщение получено из топика [{}]. Тип события: {}", topic, event.getEventType());
+
+        processEvent(event).subscribe();
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -33,6 +52,7 @@ public class NotificationServiceImpl implements NotificationService {
         return notificationRepository.save(notification)
                 .doOnNext(saved -> log.info("Запись успешно сохранена в БД с ID: {}", saved.getId()))
                 .doOnSuccess(notification1 -> processSideEffects(event))
+                .doOnError(e -> log.error("Ошибка сохранения уведомления: {}", e.getMessage()))
                 .then();
     }
 

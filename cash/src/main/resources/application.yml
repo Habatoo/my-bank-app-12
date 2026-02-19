@@ -3,6 +3,9 @@ spring:
     name: cash
   gateway:
     host: ${GATEWAY_HOST:http://account:8080}
+  kafka:
+    topics:
+      topic: ${KAFKA_TOPIC:cash-notification}
 
   r2dbc:
     url: r2dbc:postgresql://${DB_CASH_HOST:localhost}:${DB_CASH_PORT:5432}/${DB_CASH_NAME:cash_db}?sslMode=disable

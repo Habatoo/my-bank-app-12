@@ -8,7 +8,6 @@ import io.github.habatoo.repositories.AccountRepository;
 import io.github.habatoo.repositories.OutboxRepository;
 import io.github.habatoo.repositories.UserRepository;
 import io.github.habatoo.services.AccountService;
-import io.github.habatoo.services.NotificationClientService;
 import io.github.habatoo.services.OutboxService;
 import io.github.habatoo.services.UserService;
 import io.restassured.module.webtestclient.RestAssuredWebTestClient;
@@ -27,7 +26,6 @@ import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWeb
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.verifier.messaging.boot.AutoConfigureMessageVerifier;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
@@ -35,9 +33,11 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.kafka.sender.KafkaSender;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -59,6 +59,8 @@ import static org.mockito.Mockito.when;
                 "spring.main.allow-bean-definition-overriding=true",
                 "spring.liquibase.enabled=false",
                 "spring.security.enabled=false",
+                "spring.kafka.admin.auto-create=false",
+                "spring.kafka.bootstrap-servers=kafka:9092",
                 "spring.security.oauth2.client.registration.keycloak.enabled=false",
                 "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration,org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration"
         }
@@ -98,7 +100,7 @@ public abstract class BaseAccountContractTest {
     private OutboxRepository outboxRepository;
 
     @MockitoBean
-    private NotificationClientService notificationClientService;
+    private KafkaSender<String, NotificationEvent> kafkaSender;
 
     @MockitoBean
     private ReactiveClientRegistrationRepository reactiveClientRegistrationRepository;

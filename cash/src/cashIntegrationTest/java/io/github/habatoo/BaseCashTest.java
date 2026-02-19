@@ -3,6 +3,7 @@ package io.github.habatoo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.habatoo.base.BaseTest;
 import io.github.habatoo.dto.CashDto;
+import io.github.habatoo.dto.NotificationEvent;
 import io.github.habatoo.dto.enums.Currency;
 import io.github.habatoo.dto.enums.OperationType;
 import io.github.habatoo.models.Cash;
@@ -28,6 +29,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import reactor.kafka.sender.KafkaSender;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -41,7 +43,9 @@ import java.util.UUID;
         properties = {
                 "spring.cloud.compatibility-verifier.enabled=false",
                 "spring.main.allow-bean-definition-overriding=true",
-                "chassis.security.enabled=false"
+                "chassis.security.enabled=false",
+                "spring.kafka.admin.auto-create=false",
+                "spring.kafka.bootstrap-servers=kafka:9092"
         }
 )
 @EnableAutoConfiguration(exclude = {
@@ -74,6 +78,9 @@ public abstract class BaseCashTest extends BaseTest {
 
     @MockitoBean
     protected ReactiveOAuth2AuthorizedClientService authorizedClientService;
+
+    @MockitoBean
+    private KafkaSender<String, NotificationEvent> kafkaSender;
 
     @Autowired
     protected CashService cashService;

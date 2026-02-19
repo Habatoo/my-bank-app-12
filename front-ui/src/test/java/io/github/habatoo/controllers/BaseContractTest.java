@@ -3,7 +3,9 @@ package io.github.habatoo.controllers;
 import io.github.habatoo.FrontApplication;
 import io.github.habatoo.configurations.TestSecurityConfiguration;
 import io.github.habatoo.dto.CashDto;
+import io.github.habatoo.dto.NotificationEvent;
 import io.github.habatoo.dto.TransferDto;
+import io.github.habatoo.repositories.OutboxRepository;
 import io.github.habatoo.services.CashFrontService;
 import io.github.habatoo.services.FrontService;
 import io.github.habatoo.services.TransferFrontService;
@@ -35,6 +37,7 @@ import org.springframework.web.reactive.result.view.RedirectView;
 import org.springframework.web.reactive.result.view.Rendering;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import reactor.kafka.sender.KafkaSender;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -76,6 +79,9 @@ public abstract class BaseContractTest {
     protected FrontService frontService;
 
     @MockitoBean
+    protected OutboxRepository outboxRepository;
+
+    @MockitoBean
     protected CashFrontService cashFrontService;
 
     @MockitoBean
@@ -89,6 +95,9 @@ public abstract class BaseContractTest {
 
     @MockitoBean
     private ReactiveClientRegistrationRepository reactiveClientRegistrationRepository;
+
+    @MockitoBean
+    private KafkaSender<String, NotificationEvent> kafkaSender;
 
     @MockitoBean
     private ReactiveOAuth2AuthorizedClientService reactiveOAuth2AuthorizedClientService;

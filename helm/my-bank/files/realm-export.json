@@ -1,0 +1,200 @@
+{
+  "realm": "bank",
+  "enabled": true,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "editUsernameAllowed": true,
+  "verifyEmail": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "loginTheme": "bank-theme",
+  "defaultRoles": [
+    "USER"
+  ],
+  "roles": {
+    "realm": [
+      { "name": "USER", "description": "Пользователь банка" },
+      { "name": "ADMIN", "description": "Администратор" },
+      { "name": "ACCOUNT_ACCESS", "description": "Доступ к сервису аккаунтов" },
+      { "name": "CASH_ACCESS", "description": "Доступ к сервису наличных" },
+      { "name": "TRANSFER_ACCESS", "description": "Доступ к сервису переводов" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "front-ui",
+      "name": "Bank Frontend",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "90bd600c-7781-4435-961e-1f5139265f7c",
+      "baseUrl": "http://my-bank",
+      "redirectUris": [
+        "http://my-bank/*",
+        "http://my-bank/login/oauth2/code/keycloak",
+        "http://localhost:8081/*"
+      ],
+      "webOrigins": ["+"],
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "publicClient": false,
+      "serviceAccountsEnabled": true,
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "birthdate mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": {
+            "user.attribute": "birthdate",
+            "claim.name": "birthdate",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "gateway",
+      "name": "API Gateway",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "g7777777-8888-9999-aaaa-bbbbccccdddd",
+      "standardFlowEnabled": true,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "account",
+      "name": "Account Microservice",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "a2977717-36e6-42bc-862d-06927877298c",
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "cash",
+      "name": "Cash Microservice",
+      "enabled": true,
+      "secret": "b3888828-47f7-53cd-973e-17038988309d",
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "transfer",
+      "name": "Transfer Microservice",
+      "enabled": true,
+      "secret": "c4999939-58e8-64de-a84f-2814909941ae",
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect"
+    },
+    {
+      "clientId": "notification",
+      "name": "Notification Microservice",
+      "enabled": true,
+      "secret": "d5000040-69f9-75ef-b950-3925010052bf",
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect"
+    }
+  ],
+  "scopeMappings": [
+    { "client": "front-ui", "roles": ["ACCOUNT_ACCESS", "CASH_ACCESS", "TRANSFER_ACCESS"] },
+    { "client": "cash", "roles": ["ACCOUNT_ACCESS"] },
+    { "client": "transfer", "roles": ["ACCOUNT_ACCESS"] }
+  ],
+  "users": [
+    {
+      "username": "user",
+      "enabled": true,
+      "email": "user@example.com",
+      "credentials": [{ "type": "password", "value": "user", "temporary": false }],
+      "attributes": { "birthdate": ["1990-01-01"] },
+      "realmRoles": ["USER"]
+    },
+    {
+      "username": "customer",
+      "enabled": true,
+      "email": "customer@example.com",
+      "credentials": [{ "type": "password", "value": "customer", "temporary": false }],
+      "attributes": { "birthdate": ["1982-02-01"] },
+      "realmRoles": ["USER"]
+    },
+    {
+      "username": "service-account-account",
+      "enabled": true,
+      "serviceAccountClientId": "account",
+      "realmRoles": [],
+      "clientRoles": {
+        "realm-management": ["manage-users", "query-users", "view-users"]
+      }
+    },
+    {
+      "username": "service-account-cash",
+      "enabled": true,
+      "serviceAccountClientId": "cash",
+      "realmRoles": ["ACCOUNT_ACCESS"]
+    },
+    {
+      "username": "service-account-transfer",
+      "enabled": true,
+      "serviceAccountClientId": "transfer",
+      "realmRoles": ["ACCOUNT_ACCESS"]
+    }
+  ],
+  "requiredActions": [
+    {
+      "alias": "CONFIGURE_TOTP",
+      "name": "Configure OTP",
+      "providerId": "CONFIGURE_TOTP",
+      "enabled": true,
+      "defaultAction": false
+    },
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "providerId": "UPDATE_PASSWORD",
+      "enabled": true,
+      "defaultAction": false
+    },
+    {
+      "alias": "UPDATE_PROFILE",
+      "name": "Update Profile",
+      "providerId": "UPDATE_PROFILE",
+      "enabled": false,
+      "defaultAction": false
+    },
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "providerId": "VERIFY_EMAIL",
+      "enabled": true,
+      "defaultAction": false
+    }
+  ],
+  "internationalizationEnabled": true,
+  "supportedLocales": [ "ru", "en" ],
+  "defaultLocale": "ru",
+  "attributes": {
+    "userProfileEnabled": "true",
+    "userProfileConfig": "{\"attributes\":[{\"name\":\"username\",\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]}},{\"name\":\"email\",\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]}},{\"name\":\"birthdate\",\"displayName\":\"Дата рождения\",\"validations\":{\"not-empty\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"annotations\":{\"inputType\":\"date\"}}],\"groups\":[],\"unmanagedAttributePolicy\":\"ENABLED\"}"
+  }
+}

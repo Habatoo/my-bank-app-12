@@ -52,6 +52,9 @@ dependencies {
     api 'org.springframework.boot:spring-boot-starter-oauth2-client'
     api 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
+    api 'org.springframework.kafka:spring-kafka'
+    api 'io.projectreactor.kafka:reactor-kafka'
+
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
@@ -63,6 +66,7 @@ dependencies {
     testImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
     contractTestImplementation 'org.springframework.cloud:spring-cloud-starter-contract-verifier'
     testImplementation 'io.rest-assured:spring-web-test-client'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
 
     transferIntegrationTestImplementation 'org.springframework.boot:spring-boot-starter-test'
     transferIntegrationTestImplementation 'io.projectreactor:reactor-test'

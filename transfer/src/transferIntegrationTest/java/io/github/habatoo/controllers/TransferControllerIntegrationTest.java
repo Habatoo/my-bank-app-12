@@ -1,6 +1,7 @@
 package io.github.habatoo.controllers;
 
-import io.github.habatoo.TransferApplication;
+import io.github.habatoo.configurations.SecurityChassisAutoConfiguration;
+import io.github.habatoo.dto.NotificationEvent;
 import io.github.habatoo.dto.OperationResultDto;
 import io.github.habatoo.dto.TransferDto;
 import io.github.habatoo.dto.enums.Currency;
@@ -8,14 +9,17 @@ import io.github.habatoo.services.TransferService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
+import reactor.kafka.sender.KafkaSender;
 
 import java.math.BigDecimal;
 
@@ -28,18 +32,8 @@ import static org.springframework.security.test.web.reactive.server.SecurityMock
  * Интеграционные тесты для {@link TransferController}.
  * Проверяют обработку JWT (subject, preferred_username), роли доступа и вызов TransferService.
  */
-@SpringBootTest(
-        classes = TransferApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {
-                "server.port=0",
-                "spring.liquibase.enabled=false",
-                "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration,org.springdoc.core.configuration.SpringDocConfiguration",
-                "spring.cloud.compatibility-verifier.enabled=false",
-                "spring.main.allow-bean-definition-overriding=true"
-        }
-)
-@AutoConfigureWebTestClient
+@WebFluxTest(controllers = TransferController.class)
+@Import(SecurityChassisAutoConfiguration.class)
 @DisplayName("Интеграционное тестирование TransferController")
 class TransferControllerIntegrationTest {
 
@@ -50,7 +44,16 @@ class TransferControllerIntegrationTest {
     private TransferService transferService;
 
     @MockitoBean
+    private KafkaSender<String, NotificationEvent> kafkaSender;
+
+    @MockitoBean
     private ReactiveClientRegistrationRepository clientRegistrationRepository;
+
+    @MockitoBean
+    private ReactiveOAuth2AuthorizedClientService authorizedClientService;
+
+    @MockitoBean
+    private ErrorWebExceptionHandler errorWebExceptionHandler;
 
     @Test
     @DisplayName("POST /transfer - Успешный перевод для роли USER")
