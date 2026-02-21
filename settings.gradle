@@ -1,4 +1,4 @@
-rootProject.name = 'my-bank-app-11'
+rootProject.name = 'my-bank-app-12'
 
 include 'microservice-chassis'
 include 'notification'

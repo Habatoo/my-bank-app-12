@@ -6,7 +6,7 @@
 ![Kafka](https://img.shields.io/badge/Kafka-blue?logo=kafka)
 
 ## О проекте
-my-bank-app-11 — это современное банковское приложение, 
+my-bank-app-12 — это современное банковское приложение, 
 построенное на микросервисной архитектуре с использованием реактивного стека (Spring WebFlux). 
 Система обеспечивает полный цикл управления личными финансами в безопасной среде.
 Обмен сообщениями осуществляется через Kafka.
@@ -77,8 +77,8 @@ my-bank-app/
 Быстрый старт
 1. Подготовка окружения
 ```bash
-   git clone -b feature/module_two_sprint_eight_branch https://github.com/Habatoo/my-bank-app-11.git
-   cd my-bank-app-11
+   git clone -b feature/module_two_sprint_eight_branch https://github.com/Habatoo/my-bank-app-12.git
+   cd my-bank-app-12
 ```
 
 2. Автоматический деплой (Win)
