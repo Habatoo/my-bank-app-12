@@ -121,6 +121,11 @@ chmod +x deploy.sh
 - Выберите топик (например, system-alerts из вашего конфига).
 - Нажмите вкладку Messages. Вы увидите поток данных в реальном времени
 
+6. Zipkin
+- `kubectl get svc -n dev` ->  `kubectl port-forward -n dev svc/zipkin 9411:9411`.
+- http://localhost:9411
+- Запустить `RUN QUERRY`.
+
 ## Тесты
 Из корневой директории - запуск линтера и тестов Helm:
 ```bash

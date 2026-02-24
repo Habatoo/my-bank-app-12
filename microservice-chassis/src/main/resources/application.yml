@@ -99,5 +99,12 @@ management:
         enabled: true
       show-details: always
 
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://zipkin:9411}/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1
+
 server:
   port: 8080

@@ -59,3 +59,9 @@ spec:
               value: "cash-notifications"
             - name: KAFKA_RESILIENCE_TOPIC
               value: {{ .Values.global.kafka.resilienceTopic | quote }}
+            - name: SPRING_APPLICATION_NAME
+              value: {{ .Chart.Name | quote }}
+            - name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT
+              value: "http://zipkin:9411/api/v2/spans"
+            - name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+              value: "1.0"

@@ -58,3 +58,8 @@ dependencies:
     version: "25.2.0"
     repository: "file://charts/kafka"
     alias: kafka
+
+  - name: zipkin
+    version: "0.7.0"
+    repository: "file://charts/zipkin"
+    alias: zipkin

@@ -40,3 +40,9 @@ spec:
               value: "http://keycloak/realms/bank"
             - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI
               value: "http://keycloak/realms/bank"
+            - name: SPRING_APPLICATION_NAME
+              value: {{ .Chart.Name | quote }}
+            - name: MANAGEMENT_ZIPKIN_TRACING_ENDPOINT
+              value: "http://zipkin:9411/api/v2/spans"
+            - name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+              value: "1.0"
