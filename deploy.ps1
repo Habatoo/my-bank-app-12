@@ -6,7 +6,7 @@ param (
 )
 
 function Run-DeployStep {
-    param($Db, $Kc, $Svc)
+    param($Db, $Kc, $Svc, $Monitoring)
 
     $Command = "helm upgrade --install $ReleaseName $HelmPath -n $Namespace " +
                "-f $HelmPath/values.yaml " +
@@ -14,6 +14,7 @@ function Run-DeployStep {
                "--set global.deployDatabases=$Db " +
                "--set global.deployKeycloak=$Kc " +
                "--set global.deployServices=$Svc " +
+               "--set monitoring.enabled=$Monitoring " +
                "--set account.image.pullPolicy=Never " +
                "--set cash.image.pullPolicy=Never " +
                "--set front-ui.image.pullPolicy=Never " +
@@ -47,11 +48,11 @@ if (-not (kubectl get ns $Namespace --ignore-not-found)) {
 & minikube -p minikube docker-env --shell powershell | Invoke-Expression
 
 Write-Host "Step 1: Deploying Databases"
-Run-DeployStep "true" "false" "false"
+Run-DeployStep "true" "false" "false" "false"
 Start-Sleep -Seconds 10
 
 Write-Host "Step 2: Deploying Keycloak"
-Run-DeployStep "true" "true" "false"
+Run-DeployStep "true" "true" "false" "false"
 
 Write-Host "Action: Building Docker images"
 $services = @("account", "cash", "front-ui", "gateway", "notification", "transfer")
@@ -60,9 +61,11 @@ foreach ($svc in $services) {
     minikube image build -t "${svc}:latest" "./$svc"
 }
 
-
 Write-Host "Step 3: Deploying Services"
-Run-DeployStep "true" "true" "true"
+Run-DeployStep "true" "true" "true" "false"
+
+Write-Host "Step 4: Deploying Monitoring (Prometheus + Grafana)"
+Run-DeployStep "true" "true" "true" "true"
 
 Write-Host "Status: Deployment completed"
 kubectl get pods -n $Namespace

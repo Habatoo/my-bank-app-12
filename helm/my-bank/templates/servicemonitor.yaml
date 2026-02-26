@@ -4,14 +4,14 @@ metadata:
   name: my-bank-services
   namespace: dev
   labels:
-    release: my-bank
+    release: bank-dev
 spec:
   namespaceSelector:
     matchNames:
       - dev
   selector:
     matchExpressions:
-      - key: app.kubernetes.io/name
+      - key: app
         operator: In
         values:
           - front-ui

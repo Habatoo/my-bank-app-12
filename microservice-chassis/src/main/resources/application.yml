@@ -93,13 +93,14 @@ resilience4j:
         permittedNumberOfCallsInHalfOpenState: 2
 
 management:
-  server:
-    port: 8080
   endpoints:
     web:
       exposure:
         include: health,info,refresh,prometheus,metrics
+      base-path: /actuator
   metrics:
+    enable:
+      all: true
     tags:
       application: ${spring.application.name}
   endpoint:
