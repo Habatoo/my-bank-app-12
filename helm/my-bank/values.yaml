@@ -207,3 +207,25 @@ kafka:
     enabled: false
   rbac:
     create: false
+
+monitoring:
+
+  fullnameOverride: monitoring
+
+  grafana:
+    enabled: true
+    adminUser: admin
+    adminPassword: admin
+
+    service:
+      type: ClusterIP
+
+  prometheus:
+    service:
+      type: ClusterIP
+
+    prometheusSpec:
+      serviceMonitorSelectorNilUsesHelmValues: false
+      serviceMonitorSelector:
+        matchLabels:
+          release: my-bank

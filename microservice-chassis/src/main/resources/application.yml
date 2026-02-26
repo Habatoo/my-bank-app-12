@@ -1,6 +1,10 @@
 spring:
   load_limit: ${LOAD_LIMIT:100}
   kafka:
+    listener:
+      observation-enabled: true
+    template:
+      observation-enabled: true
     bootstrap-servers: ${KAFKA_URL:kafka:9092}
     topics:
       enabled: true
@@ -89,15 +93,22 @@ resilience4j:
         permittedNumberOfCallsInHalfOpenState: 2
 
 management:
+  server:
+    port: 8080
   endpoints:
     web:
       exposure:
         include: health,info,refresh,prometheus,metrics
+  metrics:
+    tags:
+      application: ${spring.application.name}
   endpoint:
     health:
       probes:
         enabled: true
       show-details: always
+    prometheus:
+      access: unrestricted
 
   zipkin:
     tracing:

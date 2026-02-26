@@ -63,3 +63,8 @@ dependencies:
     version: "0.7.0"
     repository: "file://charts/zipkin"
     alias: zipkin
+
+  - name: kube-prometheus-stack
+    version: "58.2.1"
+    repository: "file://charts/kube-prometheus-stack"
+    alias: monitoring

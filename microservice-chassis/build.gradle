@@ -42,9 +42,9 @@ dependencies {
 
     api 'io.micrometer:micrometer-observation'
     api 'io.micrometer:micrometer-tracing'
-    api 'io.micrometer:micrometer-tracing-bridge-otel'
-    api 'io.opentelemetry:opentelemetry-exporter-zipkin'
-    api 'io.opentelemetry:opentelemetry-sdk'
+    api 'io.micrometer:micrometer-registry-prometheus'
+    api 'io.micrometer:micrometer-tracing-bridge-brave'
+    api 'io.zipkin.reporter2:zipkin-reporter-brave'
 
     api 'org.mapstruct:mapstruct:1.6.3'
     api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'

@@ -142,6 +142,11 @@ helm test bank-dev -n dev --logs
 - Keycloak: http://keycloak/admin/master/console/ (Admin: admin/admin)
 
 ## Модули приложения
+Рестарт только модулей:
+```bash
+
+kubectl rollout restart deployment gateway notification front-ui account cash transfer -n dev  
+```
 Подробную информацию о каждом модуле, его API и специфичных настройках вы найдете в соответствующих разделах:
 <br><br>
 📦 Модуль Accounts — Хранение данных пользователей и балансов. [Документация модуля account](./account/README.md)

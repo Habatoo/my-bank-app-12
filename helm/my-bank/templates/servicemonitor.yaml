@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: my-bank-services
+  namespace: dev
+  labels:
+    release: my-bank
+spec:
+  namespaceSelector:
+    matchNames:
+      - dev
+  selector:
+    matchExpressions:
+      - key: app.kubernetes.io/name
+        operator: In
+        values:
+          - front-ui
+          - gateway
+          - account
+          - cash
+          - transfer
+          - notification
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 15s
