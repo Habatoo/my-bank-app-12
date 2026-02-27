@@ -110,7 +110,6 @@ management:
       show-details: always
     prometheus:
       access: unrestricted
-
   zipkin:
     tracing:
       endpoint: ${ZIPKIN_URL:http://zipkin:9411}/api/v2/spans

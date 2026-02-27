@@ -12,6 +12,8 @@ import io.github.habatoo.services.AccountService;
 import io.github.habatoo.services.OutboxClientService;
 import io.github.habatoo.services.OutboxService;
 import io.github.habatoo.services.UserService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientAutoConfiguration;
@@ -74,6 +76,21 @@ public abstract class BaseAccountTest extends BaseTest {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @Autowired
+    private Counter balanceSuccessCounter;
+
+    @Autowired
+    private Counter balanceFailureCounter;
+
+    @Autowired
+    private Timer balanceChangeTimer;
+
+    @Autowired
+    private Counter userCreatedSuccessCounter;
+
+    @Autowired
+    private Counter userCreatedFailureCounter;
 
     @MockitoBean
     protected OutboxClientService outboxClientService;

@@ -38,3 +38,28 @@ spring:
         provider:
           keycloak:
             issuer-uri: http://keycloak/realms/bank
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh,prometheus,metrics
+      base-path: /actuator
+  metrics:
+    enable:
+      all: true
+    tags:
+      application: ${spring.application.name}
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+    prometheus:
+      access: unrestricted
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://zipkin:9411}/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1

@@ -9,6 +9,8 @@ import io.github.habatoo.models.User;
 import io.github.habatoo.repositories.AccountRepository;
 import io.github.habatoo.repositories.UserRepository;
 import io.github.habatoo.services.OutboxClientService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +43,18 @@ class AccountServiceImplTest {
 
     @Mock
     private OutboxClientService outboxClientService;
+
+    @Mock
+    private Counter balanceSuccessCounter;
+
+    @Mock
+    private Counter balanceFailureCounter;
+
+    @Mock
+    private Counter accountOpenCounter;
+
+    @Mock
+    private Timer balanceChangeTimer;
 
     @InjectMocks
     private AccountServiceImpl accountService;
