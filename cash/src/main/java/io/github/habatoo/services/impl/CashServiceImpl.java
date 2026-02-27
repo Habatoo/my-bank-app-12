@@ -14,6 +14,7 @@ import io.github.habatoo.services.OutboxClientService;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator;
+import io.micrometer.core.instrument.Counter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
@@ -39,6 +40,7 @@ public class CashServiceImpl implements CashService {
     private final OperationsRepository operationsRepository;
     private final OutboxClientService outboxClientService;
     private final CircuitBreakerRegistry registry;
+    private final Counter cashSentFailureCounter;
 
     /**
      * {@inheritDoc}
@@ -74,6 +76,7 @@ public class CashServiceImpl implements CashService {
                     return executeTransaction(login, dto, delta);
                 })
                 .onErrorResume(e -> {
+                    cashSentFailureCounter.increment();
                     log.error("Ошибка валидации параметров для {}: {}", login, e.getMessage());
                     return Mono.just(errorResponse(e.getMessage()));
                 });

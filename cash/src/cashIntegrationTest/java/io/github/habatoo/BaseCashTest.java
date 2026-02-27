@@ -11,6 +11,7 @@ import io.github.habatoo.repositories.OperationsRepository;
 import io.github.habatoo.services.CashService;
 import io.github.habatoo.services.OutboxClientService;
 import io.github.habatoo.services.OutboxService;
+import io.micrometer.core.instrument.Counter;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -66,6 +67,9 @@ public abstract class BaseCashTest extends BaseTest {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @Autowired
+    protected Counter cashSentFailureCounter;
 
     @MockitoBean
     protected ServerOAuth2AuthorizedClientRepository authorizedClientRepository;
