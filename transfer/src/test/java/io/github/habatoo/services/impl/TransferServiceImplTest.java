@@ -11,6 +11,7 @@ import io.github.habatoo.services.OutboxClientService;
 import io.github.habatoo.services.RateClientService;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.micrometer.core.instrument.Counter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,9 @@ class TransferServiceImplTest {
 
     @Mock
     private RateClientService rateClientService;
+
+    @Mock
+    public Counter transferSentFailureCounter;
 
     @Mock
     private WebClient webClient;

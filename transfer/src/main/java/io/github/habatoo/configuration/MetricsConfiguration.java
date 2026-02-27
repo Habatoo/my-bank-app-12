@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Configuration;
 public class MetricsConfiguration {
 
     @Bean
-    public Counter cashSentFailureCounter(MeterRegistry meterRegistry) {
-        return Counter.builder("cash_failure_sent_total")
-                .description("Количество не успешных пополнений")
+    public Counter transferSentFailureCounter(MeterRegistry meterRegistry) {
+        return Counter.builder("transfer_failure_sent_total")
+                .description("Количество не успешных переводов")
                 .tag("status", "failure")
                 .register(meterRegistry);
     }

@@ -11,6 +11,7 @@ import io.github.habatoo.services.OutboxService;
 import io.github.habatoo.services.RateClientService;
 import io.github.habatoo.services.TransferService;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.micrometer.core.instrument.Counter;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -81,6 +82,9 @@ public abstract class BaseTransferTest extends BaseTest {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+    @Autowired
+    protected Counter transferSentFailureCounter;
 
     @Autowired
     protected OutboxService outboxService;
