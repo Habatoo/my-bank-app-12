@@ -20,6 +20,12 @@ my-bank-app-12 — это современное банковское прило
 
 ## Архитектура и структура проекта
 Проект разворачивается в кластере Kubernetes (Minikube) и управляется с помощью Helm.
+Система наблюдаемости включает:
+- Prometheus — сбор технических и бизнес-метрик.
+- Grafana — визуализация метрик и дашборды.
+- Elasticsearch — хранение логов.
+- Logstash — агрегация и парсинг логов микросервисов.
+- Kibana — визуализация и анализ логов.
 
 ---
 
@@ -72,6 +78,9 @@ my-bank-app/
 - **Security**: Keycloak (RBAC, OAuth2).
 - **Notification**: Kafka.
 - **Testing**: JUnit 5, StepVerifier (для реактивных потоков), Testcontainers.
+- **Monitoring**: Prometheus, Grafana (метрики микросервисов и бизнес-метрики).
+- **Logging**: ELK Stack (Elasticsearch, Logstash, Kibana).
+- **Tracing**: Zipkin (distributed tracing).
 
 ## Быстрый старт
 Быстрый старт
@@ -94,6 +103,12 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 
 # Обновление существующей среды без удаления кластера
 ./deploy.ps1 -Environment dev
+
+# Запуск TEST среды
+./deploy.ps1 -Environment test -CleanStart
+
+# Запуск PROD среды
+./deploy.ps1 -Environment prod
 ```
 3. Автоматический деплой (Linux)
 <br>
@@ -121,6 +136,74 @@ chmod +x deploy.sh
 - Выберите топик (например, system-alerts из вашего конфига).
 - Нажмите вкладку Messages. Вы увидите поток данных в реальном времени
 
+6. Zipkin
+- `kubectl get svc -n dev` ->  `kubectl port-forward -n dev svc/zipkin 9411:9411`.
+- http://localhost:9411
+- Запустить `RUN QUERRY`.
+
+7. Prometheus
+- `kubectl get svc -n dev`
+- `kubectl port-forward -n dev svc/prometheus-server 9090:80`
+- http://localhost:9090
+- Вкладка Graph → выполнение PromQL-запросов (например: http_server_requests_seconds_count)
+
+8. Grafana
+- `kubectl get svc -n dev`
+- `kubectl port-forward -n dev svc/grafana 3000:80`
+- http://localhost:3000
+- Логин по умолчанию: admin/admin
+- Доступны:
+    - Дашборды технических метрик (CPU, memory, JVM, HTTP)
+    - Бизнес-метрики (количество переводов, операции cash, регистрация пользователей)
+
+9. ELK Stack (Elasticsearch + Logstash + Kibana)
+<br>
+Elasticsearch:
+- `kubectl port-forward -n dev svc/elasticsearch-master 9200:9200`
+- http://localhost:9200
+<br>
+Kibana:
+- `kubectl port-forward -n dev svc/kibana 5601:5601`
+- http://localhost:5601
+- Создать Data View для индекса: logstash-*
+- Раздел Discover → просмотр логов микросервисов
+<br>
+Logstash:
+- Используется для приема логов из микросервисов (Logback → TCP/HTTP → Logstash)
+- Конфигурация: pipeline/config/logstash.conf
+- Отправляет обработанные логи в Elasticsearch
+
+## Мониторинг и логирование
+
+### Метрики
+Каждый микросервис экспортирует метрики через Spring Boot Actuator:
+- /actuator/prometheus
+
+Prometheus собирает:
+- JVM metrics
+- HTTP metrics
+- Kafka metrics
+- Бизнес-метрики (переводы, транзакции, регистрация)
+
+Grafana содержит готовые дашборды:
+- JVM Overview
+- API Metrics
+- Kafka Metrics
+- Business Transactions Dashboard
+
+### Логирование
+Микросервисы отправляют структурированные JSON-логи в Logstash.
+Logstash:
+- парсит JSON
+- добавляет environment / service name
+- индексирует в Elasticsearch
+
+Kibana используется для:
+- поиска логов по traceId
+- фильтрации по сервису
+- анализа ошибок
+- построения лог-визуализаций
+
 ## Тесты
 Из корневой директории - запуск линтера и тестов Helm:
 ```bash
@@ -137,6 +220,11 @@ helm test bank-dev -n dev --logs
 - Keycloak: http://keycloak/admin/master/console/ (Admin: admin/admin)
 
 ## Модули приложения
+Рестарт только модулей:
+```bash
+
+kubectl rollout restart deployment gateway notification front-ui account cash transfer -n dev  
+```
 Подробную информацию о каждом модуле, его API и специфичных настройках вы найдете в соответствующих разделах:
 <br><br>
 📦 Модуль Accounts — Хранение данных пользователей и балансов. [Документация модуля account](./account/README.md)

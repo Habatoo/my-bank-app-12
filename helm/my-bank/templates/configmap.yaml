@@ -23,3 +23,5 @@ data:
   CHASSIS_KAFKA_ENABLED: "true"
 
   LOAD_LIMIT: "100"
+
+  ZIPKIN_URL: "http://zipkin:9411"

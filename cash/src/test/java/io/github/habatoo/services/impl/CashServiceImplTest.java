@@ -9,6 +9,7 @@ import io.github.habatoo.repositories.OperationsRepository;
 import io.github.habatoo.services.OutboxClientService;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.micrometer.core.instrument.Counter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,12 +21,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
-import java.net.URI;
 import java.util.function.Function;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -55,6 +54,8 @@ class CashServiceImplTest {
     private CircuitBreakerRegistry circuitBreakerRegistry;
     @Mock
     private Jwt jwt;
+    @Mock
+    private Counter cashSentFailureCounter;
 
     @InjectMocks
     private CashServiceImpl cashService;

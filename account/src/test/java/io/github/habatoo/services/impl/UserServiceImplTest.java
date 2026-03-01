@@ -9,6 +9,7 @@ import io.github.habatoo.models.User;
 import io.github.habatoo.repositories.AccountRepository;
 import io.github.habatoo.repositories.UserRepository;
 import io.github.habatoo.services.OutboxClientService;
+import io.micrometer.core.instrument.Counter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,12 @@ class UserServiceImplTest {
 
     @Mock
     private WebClient backgroundWebClient;
+
+    @Mock
+    private Counter successCounter;
+
+    @Mock
+    private Counter failureCounter;
 
     @Mock
     private WebClient.RequestHeadersUriSpec uriSpec;

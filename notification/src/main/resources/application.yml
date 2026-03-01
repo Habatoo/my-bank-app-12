@@ -25,3 +25,28 @@ spring:
     user: ${DB_USER_NAME:bank_admin}
     password: ${DB_PASSWORD:bank_password}
     contexts: dev,test,default
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,refresh,prometheus,metrics
+      base-path: /actuator
+  metrics:
+    enable:
+      all: true
+    tags:
+      application: ${spring.application.name}
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+    prometheus:
+      access: unrestricted
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://zipkin:9411}/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1

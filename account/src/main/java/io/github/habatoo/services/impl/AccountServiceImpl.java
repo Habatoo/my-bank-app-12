@@ -13,6 +13,8 @@ import io.github.habatoo.repositories.AccountRepository;
 import io.github.habatoo.repositories.UserRepository;
 import io.github.habatoo.services.AccountService;
 import io.github.habatoo.services.OutboxClientService;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -37,6 +39,11 @@ public class AccountServiceImpl implements AccountService {
     private final UserRepository userRepository;
     private final AccountRepository accountRepository;
     private final OutboxClientService outboxClientService;
+
+    private final Counter balanceSuccessCounter;
+    private final Counter balanceFailureCounter;
+    private final Counter accountOpenCounter;
+    private final Timer balanceChangeTimer;
 
     /**
      * {@inheritDoc}
@@ -73,22 +80,46 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public Mono<OperationResultDto<Void>> changeBalance(String login, BigDecimal delta, String currencyStr) {
+        Timer.Sample sample = Timer.start();
+
         return parseCurrency(currencyStr)
                 .flatMap(currency -> findUserByLogin(login)
-                        .flatMap(user -> accountRepository.findByUserIdAndCurrency(user.getId(), currency)))
+                        .flatMap(user -> accountRepository.findByUserIdAndCurrency(
+                                user.getId(), currency)))
                 .flatMap(account -> getAccount(login, delta, account))
-                .switchIfEmpty(Mono.just(createErrorResponse("ACCOUNT_NOT_FOUND", "Счет не найден")))
-                .onErrorResume(e -> Mono.just(createErrorResponse("VALIDATION_ERROR", e.getMessage())));
+                .doOnNext(result -> {
+                    if (result.isSuccess()) {
+                        balanceSuccessCounter.increment();
+                    } else {
+                        balanceFailureCounter.increment();
+                    }
+                })
+                .doOnError(e -> balanceFailureCounter.increment())
+                .doFinally(signal ->
+                        sample.stop(balanceChangeTimer)
+                )
+                .switchIfEmpty(Mono.just(
+                        createErrorResponse("ACCOUNT_NOT_FOUND", "Счет не найден")))
+                .onErrorResume(e -> Mono.just(
+                        createErrorResponse("VALIDATION_ERROR", e.getMessage())));
     }
 
     @Override
     @Transactional
     public Mono<OperationResultDto<Void>> openAccount(String login, String currencyStr) {
+
         return parseCurrency(currencyStr)
                 .flatMap(currency -> findUserByLogin(login)
                         .flatMap(user -> accountRepository.findByUserIdAndCurrency(user.getId(), currency)
-                                .flatMap(exists -> Mono.just(createErrorResponse("ACCOUNT_EXISTS", "Счет уже открыт")))
-                                .switchIfEmpty(createNewAccount(user, currency))))
+                                .flatMap(exists -> {
+                                    accountOpenCounter.increment();
+                                    return Mono.just(
+                                            createErrorResponse("ACCOUNT_EXISTS", "Счет уже открыт"));
+                                })
+                                .switchIfEmpty(createNewAccount(user, currency)
+                                        .doOnSuccess(r -> accountOpenCounter.increment())
+                                )))
+                .doOnError(e -> accountOpenCounter.increment())
                 .onErrorResume(e -> Mono.just(createErrorResponse("ERROR", e.getMessage())));
     }
 

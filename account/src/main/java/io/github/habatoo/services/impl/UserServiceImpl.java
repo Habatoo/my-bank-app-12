@@ -10,10 +10,10 @@ import io.github.habatoo.repositories.AccountRepository;
 import io.github.habatoo.repositories.UserRepository;
 import io.github.habatoo.services.OutboxClientService;
 import io.github.habatoo.services.UserService;
+import io.micrometer.core.instrument.Counter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +39,9 @@ public class UserServiceImpl implements UserService {
     private final OutboxClientService outboxClientService;
     private final WebClient backgroundWebClient;
 
+    private final Counter userCreatedSuccessCounter;
+    private final Counter userCreatedFailureCounter;
+
     @Value("${spring.security.oauth2.client.provider.keycloak.issuer-uri}")
     private String keycloakIssuerUri;
 
@@ -49,7 +52,11 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.findByLogin(login)
                 .flatMap(this::enrichWithAccounts)
-                .switchIfEmpty(Mono.defer(() -> registerUser(jwt)));
+                .switchIfEmpty(Mono.defer(() -> registerUser(jwt)))
+                .doOnError(e -> {
+                    userCreatedFailureCounter.increment();
+                    log.error("Ошибка при создании пользователя {}", login, e);
+                });
     }
 
     @Override
@@ -116,8 +123,19 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user)
                 .flatMap(saved -> outboxClientService.saveEvent(createRegEvent(saved))
                         .thenReturn(UserProfileResponseDto.builder()
-                                .login(saved.getLogin()).name(saved.getName())
-                                .birthDate(saved.getBirthDate()).accounts(List.of()).build()));
+                                .login(saved.getLogin())
+                                .name(saved.getName())
+                                .birthDate(saved.getBirthDate())
+                                .accounts(List.of())
+                                .build()))
+                .doOnSuccess(resp -> {
+                    userCreatedSuccessCounter.increment();
+                    log.info("Пользователь {} успешно создан", user.getLogin());
+                })
+                .doOnError(e -> {
+                    userCreatedFailureCounter.increment();
+                    log.error("Ошибка регистрации пользователя {}", user.getLogin(), e);
+                });
     }
 
     private User buildUserFromToken(Jwt jwt) {
