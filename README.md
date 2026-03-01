@@ -94,6 +94,12 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 
 # Обновление существующей среды без удаления кластера
 ./deploy.ps1 -Environment dev
+
+# Запуск TEST среды
+./deploy.ps1 -Environment test -CleanStart
+
+# Запуск PROD среды
+./deploy.ps1 -Environment prod
 ```
 3. Автоматический деплой (Linux)
 <br>
@@ -125,6 +131,22 @@ chmod +x deploy.sh
 - `kubectl get svc -n dev` ->  `kubectl port-forward -n dev svc/zipkin 9411:9411`.
 - http://localhost:9411
 - Запустить `RUN QUERRY`.
+
+7. Prometheus
+- `kubectl get svc -n dev` ->  `kubectl port-forward -n dev svc/zipkin 9411:9411`.
+- http://localhost:9411
+- Запустить `RUN QUERRY`.
+
+8. Grafana
+- `kubectl get svc -n dev` ->  `kubectl port-forward -n dev svc/zipkin 9411:9411`.
+- http://localhost:9411
+- Запустить `RUN QUERRY`.
+
+9.  Logstash, Elasticsearch и Kibana
+- `kubectl get svc -n dev` ->  `kubectl port-forward -n dev svc/zipkin 9411:9411`.
+- Запустить `Kibana`.
+- http://localhost:5601
+- Просмотр Data View, визуализации и дашборды для логов приложения.
 
 ## Тесты
 Из корневой директории - запуск линтера и тестов Helm:
@@ -161,3 +183,20 @@ kubectl rollout restart deployment gateway notification front-ui account cash tr
 <br>
 💻 Модуль Front UI — Пользовательский интерфейс. [Документация модуля front-ui](./front-ui/README.md)
 <hr>
+
+
+minikube stop
+minikube delete
+
+minikube start --memory=8192 --cpus=4 --driver=docker
+kubectl get nodes
+
+minikube addons enable storage-provisioner
+minikube addons enable default-storageclass
+
+kubectl create namespace dev
+
+helm upgrade --install bank-dev ./helm/my-bank -n dev -f ./helm/my-bank/values.yaml -f ./helm/my-bank/values-dev.yaml --wait --timeout 15m
+
+helm upgrade --install bank-dev ./helm/my-bank -n dev -f ./helm/my-bank/values.yaml -f ./helm/my-bank/values-dev.yaml --wait --timeout 20m
+

@@ -209,23 +209,126 @@ kafka:
     create: false
 
 monitoring:
-
+  enabled: true
   fullnameOverride: monitoring
 
   grafana:
     enabled: true
+    additionalDataSources:
+      - name: Elasticsearch
+        type: elasticsearch
+        access: proxy
+        url: http://elasticsearch-master:9200
+        jsonData:
+          timeField: "@timestamp"
+          esVersion: 8
+          index: "my-bank-logs-*"
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: "my-bank"
+          orgId: 1
+          folder: "My Bank"
+          type: file
+          options:
+            path: /var/lib/grafana/dashboards/my-bank
+    dashboards:
+      my-bank:
+        my-bank-business:
+          file: files/grafana-dashboards/my-bank-business.json
     adminUser: admin
     adminPassword: admin
 
     service:
       type: ClusterIP
 
-  prometheus:
-    service:
-      type: ClusterIP
+  kubeStateMetrics:
+    enabled: false
 
+  nodeExporter:
+    enabled: false
+
+  alertmanager:
+    enabled: false
+
+  prometheus:
+    enabled: true
     prometheusSpec:
-      serviceMonitorSelectorNilUsesHelmValues: false
-      serviceMonitorSelector:
-        matchLabels:
-          release: my-bank
+      resources:
+        requests:
+          memory: 800Mi
+        limits:
+          memory: 1Gi
+
+elasticsearch:
+  enabled: true
+  replicas: 1
+
+  esJavaOpts: "-Xmx512m -Xms512m"
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 700Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+  persistence:
+    enabled: false
+
+  minimumMasterNodes: 1
+
+  service:
+    type: ClusterIP
+
+logstash:
+  enabled: true
+  service:
+    type: ClusterIP
+
+  logstashPipeline:
+    logstash.conf: |
+      input {
+        tcp {
+          port => 5000
+          codec => json
+        }
+      }
+
+      filter {
+        date {
+          match => ["@timestamp", "ISO8601"]
+        }
+      }
+
+      output {
+        elasticsearch {
+          hosts => ["http://elasticsearch-master:9200"]
+          index => "my-bank-logs-%{+YYYY.MM.dd}"
+        }
+      }
+
+  serviceAccount:
+    create: false
+
+kibana:
+  enabled: true
+  initContainers: [ ]
+  extraEnvs: [ ]
+  preInstallJob:
+    enabled: false
+  readinessProbe:
+    enabled: false
+  service:
+    type: ClusterIP
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 1Gi
+    limits:
+      cpu: 500m
+      memory: 2Gi
+
+  elasticsearchHosts: "http://elasticsearch-master:9200"

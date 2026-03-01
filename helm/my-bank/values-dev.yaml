@@ -37,6 +37,12 @@ gateway:
     limits: { memory: "768Mi", cpu: "500m" }
     requests: { memory: "512Mi", cpu: "200m" }
 
+elasticsearch:
+  replicas: 1
+  resources:
+    limits: { memory: "1500Mi", cpu: "500m" }
+    requests: { memory: "1000Mi", cpu: "200m" }
+
 account-db: { persistence: { enabled: false } }
 cash-db: { persistence: { enabled: false } }
 notification-db: { persistence: { enabled: false } }

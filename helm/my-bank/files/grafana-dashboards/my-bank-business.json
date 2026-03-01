@@ -1,0 +1,51 @@
+{
+  "title": "My Bank - Business Metrics",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Balance Change Success Rate",
+      "targets": [
+        {
+          "expr": "rate(account_balance_change_total{status=\"success\"}[5m])",
+          "legendFormat": "success"
+        },
+        {
+          "expr": "rate(account_balance_change_total{status=\"failure\"}[5m])",
+          "legendFormat": "failure"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Account Open Total",
+      "targets": [
+        {
+          "expr": "sum(rate(account_open_total[5m]))",
+          "legendFormat": "opened"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Balance Change Latency (avg)",
+      "targets": [
+        {
+          "expr": "rate(account_balance_change_duration_seconds_sum[5m]) / rate(account_balance_change_duration_seconds_count[5m])",
+          "legendFormat": "avg latency"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP 5xx Errors",
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count{status=~\"5..\"}[5m])",
+          "legendFormat": "5xx"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 37,
+  "version": 1
+}
